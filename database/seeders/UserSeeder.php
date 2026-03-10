@@ -22,7 +22,7 @@ class UserSeeder extends Seeder
                 "password" => Hash::make("adminadmin"),
                 "cellphone" => "11111111111",
                 "active" => true,
-                "id_role" => 1
+                "role_id" => 1
             ],
             [
                 "name" => "Laura Elena",
@@ -31,7 +31,7 @@ class UserSeeder extends Seeder
                 "password" => Hash::make("lauralaura"),
                 "cellphone" => "8711381969",
                 "active" => true,
-                "id_role" => 2
+                "role_id" => 2
             ],
             [
                 "name" => "Pedro Abraham",
@@ -40,7 +40,7 @@ class UserSeeder extends Seeder
                 "password" => Hash::make("pedropedro"),
                 "cellphone" => "8713518648",
                 "active" => true,
-                "id_role" => 3
+                "role_id" => 3
             ],
             [
                 "name" => "Jimena Itiel",
@@ -49,7 +49,7 @@ class UserSeeder extends Seeder
                 "password" => Hash::make("jimenajimena"),
                 "cellphone" => "8711341714",
                 "active" => true,
-                "id_role" => 3
+                "role_id" => 3
             ],
             [
                 "name" => "Emiliano",
@@ -58,7 +58,7 @@ class UserSeeder extends Seeder
                 "password" => Hash::make("emilianoemiliano"),
                 "cellphone" => "4421124127",
                 "active" => true,
-                "id_role" => 3
+                "role_id" => 3
             ],
             [
                 "name" => "Brent",
@@ -67,7 +67,7 @@ class UserSeeder extends Seeder
                 "password" => Hash::make("brentbrent"),
                 "cellphone" => "8711341715",
                 "active" => true,
-                "id_role" => 4
+                "role_id" => 4
             ],
             [
                 "name" => "Ana Lilia",
@@ -76,7 +76,7 @@ class UserSeeder extends Seeder
                 "password" => Hash::make("anaana"),
                 "cellphone" => "8711353535",
                 "active" => true,
-                "id_role" => 3
+                "role_id" => 3
             ]
         ]);
     }
