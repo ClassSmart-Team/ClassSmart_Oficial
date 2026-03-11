@@ -25,31 +25,31 @@ class Assignment extends Model
     }
 
     // Grupo al que pertenece la tarea
-    public function group(): BelongsTo
+    public function group()
     {
         return $this->belongsTo(Group::class);
     }
 
     // Unidad a la que pertenece la tarea
-    public function unit(): BelongsTo
+    public function unit()
     {
         return $this->belongsTo(Unit::class);
     }
 
     // Entregas de los alumnos para esta tarea
-    public function submissions(): HasMany
+    public function submissions()
     {
         return $this->hasMany(Submission::class);
     }
 
     // Archivos adjuntos por el maestro a esta tarea
-    public function files(): HasMany
+    public function files()
     {
         return $this->hasMany(File::class);
     }
 
     // Notificaciones relacionadas a esta tarea
-    public function notifications(): HasMany
+    public function notifications()
     {
         return $this->hasMany(Notification::class, 'related_assignment');
     }

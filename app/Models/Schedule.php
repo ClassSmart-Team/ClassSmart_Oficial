@@ -12,4 +12,10 @@ class Schedule extends Model
         'start_time',
         'end_time',
     ];
+
+    // Grupo al que pertenece este horario
+    public function group()
+    {
+        return $this->belongsTo(Group::class);
+    }
 }

@@ -21,4 +21,10 @@ class Period extends Model
             'end_date' => 'date',
         ];
     }
+
+    // Grupos que pertenecen a este periodo
+    public function groups()
+    {
+        return $this->hasMany(Group::class);
+    }
 }
