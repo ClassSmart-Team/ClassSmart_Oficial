@@ -6,21 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('periods', function (Blueprint $table) {
             $table->id();
-            $table->enum('name', [
-                'Semestre 1',
-                'Semestre 2',
-                'Semestre 3',
-                'Semestre 4',
-                'Semestre 5',
-                'Semestre 6'
-            ]);
+            $table->string('name', 100); // Ej: "Semestre 1", "Cuatrimestre 2", lo que sea
             $table->year('year');
             $table->date('start_date');
             $table->date('end_date');
@@ -28,11 +18,10 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('periods');
     }
 };
+
+

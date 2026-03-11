@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('grade_records', function (Blueprint $table) {
@@ -17,15 +14,18 @@ return new class extends Migration
             $table->foreignId('group_id')->constrained('groups')->onDelete('cascade');
             $table->foreignId('unit_id')->constrained('units')->onDelete('cascade');
             $table->decimal('grade', 5, 2);
+
+            // Un alumno solo puede tener UNA calificación final por unidad/grupo
+            $table->unique(['student_id', 'group_id', 'unit_id'], 'grade_records_unique');
+
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('grade_history');
+        Schema::dropIfExists('grade_records');
     }
 };
+
+

@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('group_id')->constrained('groups')->onDelete('cascade');
             $table->string('title');
             $table->text('message');
+            $table->string('attachment_path')->nullable(); // ruta del archivo adjunto
+            $table->string('attachment_name')->nullable(); // nombre visible del archivo
             $table->timestamps();
         });
     }

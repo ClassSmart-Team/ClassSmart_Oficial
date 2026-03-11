@@ -18,22 +18,20 @@ return new class extends Migration
             $table->dateTime('start_date');
             $table->dateTime('end_date');
             $table->enum('status', [
-                'Asignada',
-                'Entregada',
-                'Vencida',
-                'Cancelada'
-                ]);
+                'Activa',    // recién asignada, aceptando entregas
+                'Cerrada',   // venció, ya no acepta entregas
+                'Cancelada', // el maestro la canceló
+            ])->default('Activa');
             $table->foreignId('group_id')->constrained('groups')->onDelete('cascade');
             $table->foreignId('unit_id')->constrained('units')->onDelete('cascade');
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('assignments');
     }
 };
+
+
