@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GroupController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -21,3 +22,5 @@ Route::delete("/{id}", [UserController::class, "delete"]);
 //ROUTE PARA REGISTRO Y LOGIN
 Route::post("/login", [AuthController::class, "login"]);
 Route::post("/register", [UserController::class, "create"]);
+Route::Apiresource('groups', GroupController::class);
+Route::Apiresource('group/create', GroupController::class);

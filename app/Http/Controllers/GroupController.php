@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\GroupRequest;
 use App\Http\Resources\GroupResource;
 use App\Models\Group;
+use App\Models\User;
 use App\Traits\ApiResponse;
-use Illuminate\Http\Request;
 
 class GroupController extends Controller
 {
@@ -33,8 +33,9 @@ class GroupController extends Controller
      */
     public function store(GroupRequest $request)
     {
+        $owner = User::where('name', $request->owner)->first();
         $group = Group::create([
-            'owner' => $request->user()->id,
+            'owner' => $owner->id,
             'period_id' => $request->period_id,
             'name' => $request->name,
             'description' => $request->description,

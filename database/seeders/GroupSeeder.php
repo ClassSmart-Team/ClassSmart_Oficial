@@ -25,7 +25,7 @@ class GroupSeeder extends Seeder
                 "active" => true
             ],
             [
-                "owner" => 7,
+                "owner" => 6,
                 "period_id" => 3,
                 "name" => "Base de Datos",
                 "description" => "Fundamentos de bases de datos",
@@ -53,21 +53,21 @@ class GroupSeeder extends Seeder
                 "active" => true
             ],
             [
-                "owner" => 7,
+                "owner" => 4,
                 "period_id" => 7,
                 "name" => "Desarrollo Web",
                 "description" => "HTML, CSS y JS",
                 "active" => true
             ],
             [
-                "owner" => 7,
+                "owner" => 2,
                 "period_id" => 8,
                 "name" => "Laravel",
                 "description" => "Framework PHP",
                 "active" => true
             ],
             [
-                "owner" => 2,
+                "owner" => 5,
                 "period_id" => 9,
                 "name" => "Vue",
                 "description" => "Framework frontend",
@@ -81,14 +81,14 @@ class GroupSeeder extends Seeder
                 "active" => true
             ],
             [
-                "owner" => 7,
+                "owner" => 3,
                 "period_id" => 11,
                 "name" => "Seguridad",
                 "description" => "Seguridad en aplicaciones",
                 "active" => true
             ],
             [
-                "owner" => 7,
+                "owner" => 4,
                 "period_id" => 12,
                 "name" => "DevOps",
                 "description" => "Integracion continua",
@@ -109,7 +109,7 @@ class GroupSeeder extends Seeder
                 "active" => true
             ],
             [
-                "owner" => 7,
+                "owner" => 6,
                 "period_id" => 15,
                 "name" => "Arquitectura",
                 "description" => "Arquitectura de software",
