@@ -1,24 +1,34 @@
 <?php
-
+ 
 namespace App\Http\Requests;
-
+ 
 use Illuminate\Foundation\Http\FormRequest;
-
+ 
 class GroupRequest extends FormRequest
 {
+    public function authorize(): bool
+    {
+        // Solo maestros pueden crear grupos
+        return $this->user()->isTeacher();
+    }
+ 
     public function rules(): array
     {
         return [
-            'owner' => ['required', 'integer'],
-            'period_id' => ['required', 'integer'],
-            'name' => ['required'],
-            'description' => ['required'],
-            'active' => ['boolean'],
+            'period_id'   => ['required', 'integer', 'exists:periods,id'],
+            'name'        => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'active'      => ['boolean'],
         ];
     }
-
-    public function authorize(): bool
+ 
+    public function messages(): array
     {
-        return true;
+        return [
+            'period_id.required' => 'El periodo es obligatorio.',
+            'period_id.exists'   => 'El periodo seleccionado no existe.',
+            'name.required'      => 'El nombre del grupo es obligatorio.',
+        ];
     }
 }
+ 

@@ -21,7 +21,7 @@ return new class extends Migration
                 'Entregada tarde',  // entregó pero después de la fecha límite
                 'Calificada',       // el maestro ya le puso nota
             ])->default('Entregada');
-            $table->decimal('grade', 5, 2)->nullable(); // null = aún no calificada
+            $table->decimal('grade', 4, 2)->nullable(); // null = aún no calificada
             $table->text('feedback')->nullable();        // comentarios del maestro
             $table->timestamps();
         });

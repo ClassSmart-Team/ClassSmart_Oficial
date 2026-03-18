@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('group_id')->constrained('groups')->onDelete('cascade');
             $table->foreignId('unit_id')->constrained('units')->onDelete('cascade');
-            $table->decimal('grade', 5, 2);
+            $table->decimal('grade', 4, 2);
 
             // Un alumno solo puede tener UNA calificación final por unidad/grupo
             $table->unique(['student_id', 'group_id', 'unit_id'], 'grade_records_unique');
