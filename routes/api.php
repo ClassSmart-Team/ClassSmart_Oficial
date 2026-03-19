@@ -20,7 +20,10 @@ use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\UnitController;
  
 /*Roles de Cajon 
-1 = Admin | 2 = Teacher | 3 = Student | 4 = Parent
+1 = Admin 
+2 = Teacher 
+3 = Student 
+4 = Parent
 */
  
 // Rutas públicas (sin token)
