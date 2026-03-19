@@ -8,9 +8,7 @@ class MessageRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Cualquier usuario autenticado puede enviar mensajes
-        // excepto padres — solo pueden ver, no escribir
-        return !$this->user()->isParent();
+        return true; // La autorización real se maneja en el controller
     }
  
     public function rules(): array

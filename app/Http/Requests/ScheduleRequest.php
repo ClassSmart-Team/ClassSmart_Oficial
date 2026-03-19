@@ -8,8 +8,7 @@ class ScheduleRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Solo el admin asigna horarios
-        return $this->user()->isAdmin();
+        return true; // La autorización real se maneja en el controller
     }
  
     public function rules(): array

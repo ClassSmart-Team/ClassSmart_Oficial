@@ -8,8 +8,7 @@ class AnnouncementRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Solo maestros y admins pueden crear anuncios
-        return true; // La autorización real se maneja en el controller 
+        return true; // La autorización real se maneja en el controller
     }
  
     public function rules(): array

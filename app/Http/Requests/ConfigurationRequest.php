@@ -8,8 +8,7 @@ class ConfigurationRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Cualquier usuario autenticado puede cambiar sus preferencias
-        return $this->user() !== null;
+        return true; // La autorización real se maneja en el controller
     }
  
     public function rules(): array

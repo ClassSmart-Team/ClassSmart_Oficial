@@ -8,8 +8,7 @@ class NotificationRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Solo maestros y admins pueden crear notificaciones manualmente
-        return $this->user()->isTeacher() || $this->user()->isAdmin();
+        return true; // La autorización real se maneja en el controller
     }
  
     public function rules(): array

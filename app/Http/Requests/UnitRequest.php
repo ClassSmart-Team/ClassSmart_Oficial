@@ -8,8 +8,7 @@ class UnitRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Solo maestros y admins pueden crear/editar unidades
-        return $this->user()->isTeacher() || $this->user()->isAdmin();
+        return true; // La autorización real se maneja en el controller
     }
  
     public function rules(): array

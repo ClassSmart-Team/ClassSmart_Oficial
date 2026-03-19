@@ -8,8 +8,7 @@ class PeriodRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Solo el admin puede crear/editar periodos
-        return $this->user()->isAdmin();
+        return true; // La autorización real se maneja en el controller
     }
  
     public function rules(): array

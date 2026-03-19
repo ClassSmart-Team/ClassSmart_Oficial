@@ -8,8 +8,7 @@ class AssignmentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Solo maestros y admins pueden crear/editar tareas
-        return $this->user()->isTeacher() || $this->user()->isAdmin();
+        return true; // La autorización real se maneja en el controller
     }
  
     public function rules(): array

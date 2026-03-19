@@ -8,9 +8,7 @@ class GroupFileRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Cualquier usuario autenticado puede subir archivos al repositorio
-        // excepto padres — solo pueden ver
-        return !$this->user()->isParent();
+        return true; // La autorización real se maneja en el controller
     }
  
     public function rules(): array

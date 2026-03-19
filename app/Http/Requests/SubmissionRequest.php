@@ -8,8 +8,7 @@ class SubmissionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Solo alumnos pueden entregar tareas
-        return $this->user()->isStudent();
+        return true; // La autorización real se maneja en el controller
     }
  
     public function rules(): array
