@@ -50,7 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('grade-records', [GradeRecordController::class, 'index']);
     Route::get('grade-records/{id}', [GradeRecordController::class, 'show']);
  
-    /*Admin (Rol 1) */
+    // Admin (Rol 1)
     Route::middleware('role:1')->group(function () {
         Route::apiResource('users', UserController::class);
         Route::apiResource('roles', RoleController::class);
@@ -82,9 +82,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('submissions/{submission}/grade', [SubmissionController::class, 'grade']);
     });
  
-    // -------------------------------------------------------
-    // Solo Alumno (role:3)
-    // -------------------------------------------------------
+
+    // Solo Alumno (role 3)
     Route::middleware('role:3')->group(function () {
         Route::post('submissions', [SubmissionController::class, 'store']);
     });
