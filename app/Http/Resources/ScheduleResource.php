@@ -20,8 +20,8 @@ class ScheduleResource extends JsonResource
             // En lugar de ID crudo, devolvemos el objeto completo
             'group' => new GroupResource($this->whenLoaded('group')),
  
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }

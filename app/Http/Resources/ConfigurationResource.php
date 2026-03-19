@@ -21,8 +21,8 @@ class ConfigurationResource extends JsonResource
             // En lugar de user_id crudo, devolvemos el objeto completo
             'user' => new UserResource($this->whenLoaded('user')),
  
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }

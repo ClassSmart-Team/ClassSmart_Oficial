@@ -19,8 +19,8 @@ class MessageResource extends JsonResource
             'user' => new UserResource($this->whenLoaded('user')),
             'chat' => new ChatResource($this->whenLoaded('chat')),
  
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }

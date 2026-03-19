@@ -26,8 +26,8 @@ class NotificationResource extends JsonResource
             // null = no leída, timestamp = cuándo la leyó
             'read_at' => $this->whenPivotLoaded('notification_user', fn() => $this->pivot->read_at),
  
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }

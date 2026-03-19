@@ -15,8 +15,8 @@ class AssignmentResource extends JsonResource
             'id'          => $this->id,
             'title'       => $this->title,
             'description' => $this->description,
-            'start_date'  => $this->start_date->format('Y-m-d H:i:s'),
-            'end_date'    => $this->end_date->format('Y-m-d H:i:s'),
+            'start_date'  => $this->start_date?->format('Y-m-d H:i:s'),
+            'end_date'    => $this->end_date?->format('Y-m-d H:i:s'),
             'status'      => $this->status,
  
             'group'       => new GroupResource($this->whenLoaded('group')),
@@ -31,8 +31,8 @@ class AssignmentResource extends JsonResource
             // Conteo de entregas (útil para el maestro)
             'submissions_count' => $this->whenCounted('submissions'),
  
-            'created_at'  => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at'  => $this->updated_at->format('Y-m-d H:i:s'),
+            'created_at'  => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at'  => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }

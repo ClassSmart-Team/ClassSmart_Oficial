@@ -22,8 +22,8 @@ class PeriodResource extends JsonResource
             'groups'       => GroupResource::collection($this->whenLoaded('groups')),
             'groups_count' => $this->whenCounted('groups'),
  
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }

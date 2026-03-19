@@ -23,8 +23,8 @@ class SubmissionResource extends JsonResource
             'assignment' => new AssignmentResource($this->whenLoaded('assignment')),
             'files'      => FileResource::collection($this->whenLoaded('files')),
  
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }

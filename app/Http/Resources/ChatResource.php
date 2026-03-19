@@ -24,8 +24,8 @@ class ChatResource extends JsonResource
             'users_count'    => $this->whenCounted('users'),
             'messages_count' => $this->whenCounted('messages'),
  
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }

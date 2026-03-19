@@ -18,8 +18,8 @@ class AnnouncementResource extends JsonResource
             'attachment_path' => $this->attachment_path,
             'attachment_name' => $this->attachment_name,
             'group'           => new GroupResource($this->whenLoaded('group')),
-            'created_at'      => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at'      => $this->updated_at->format('Y-m-d H:i:s'),
+            'created_at'      => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at'      => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }

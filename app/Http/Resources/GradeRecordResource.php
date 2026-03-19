@@ -20,8 +20,8 @@ class GradeRecordResource extends JsonResource
             'group'   => new GroupResource($this->whenLoaded('group')),
             'unit'    => new UnitResource($this->whenLoaded('unit')),
  
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }
