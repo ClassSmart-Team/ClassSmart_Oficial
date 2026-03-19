@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
  
 use App\Http\Requests\SubmissionRequest;
 use App\Http\Resources\SubmissionResource;
+use App\Models\Assignment;
 use App\Models\File;
 use App\Models\Notification;
 use App\Models\Submission;
-use App\Models\Assignment;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
  
@@ -27,7 +27,7 @@ class SubmissionController extends Controller
  
     public function store(SubmissionRequest $request)
     {
-        $assignment = Assignment::find($request->assignment_id);
+        $assignment = Assignment::with('group')->find($request->assignment_id);
         if (!$assignment) {
             return $this->errorResponse('Tarea no encontrada', 404);
         }
@@ -36,14 +36,12 @@ class SubmissionController extends Controller
         }
         $submissionDate = now();
         $isLate = $submissionDate > $assignment->end_date;
- 
         $submission = Submission::create([
             'assignment_id'   => $request->assignment_id,
             'student_id'      => $request->user()->id,
             'submission_date' => $submissionDate,
             'status'          => $isLate ? 'Entregada tarde' : 'Entregada',
         ]);
- 
         // Guardar archivos adjuntos si vienen
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
@@ -67,7 +65,11 @@ class SubmissionController extends Controller
             'type'               => 'Individual',
             'related_assignment' => $assignment->id,
         ]);
-        $notification->recipients()->attach($assignment->group->owner, ['read_at' => null]);
+        // getAttribute('owner') para obtener el ID del maestro y no el objeto
+        $notification->recipients()->attach(
+            $assignment->group->getAttribute('owner'),
+            ['read_at' => null]
+        );
         $submission->load(['student', 'assignment', 'files']);
         return $this->successResponse(
             new SubmissionResource($submission),
@@ -115,7 +117,6 @@ class SubmissionController extends Controller
             'related_assignment' => $submission->assignment_id,
         ]);
         $notification->recipients()->attach($student->id, ['read_at' => null]);
- 
         // Notificar a los padres del alumno
         Notification::notifyParentsOf($student, [
             'created_by'         => $request->user()->id,

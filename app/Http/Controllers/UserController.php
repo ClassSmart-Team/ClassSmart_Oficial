@@ -20,11 +20,21 @@ class UserController extends Controller
  
     public function store(UserRequest $request)
     {
+        // Validación extra para student_id sin tocar UserRequest
+        $request->validate([
+            'student_id' => ['nullable', 'integer', 'exists:users,id'],
+        ]);
+ 
         $data = $request->validated();
         $data['password'] = Hash::make($data['password']);
  
         $user = User::create($data);
         $user->load('role');
+ 
+        // Si es padre y viene student_id, vincular al hijo
+        if ($user->role_id === 4 && $request->student_id) {
+            $user->children()->attach($request->student_id);
+        }
  
         return $this->successResponse(new UserResource($user), 'Usuario creado exitosamente', 201);
     }
