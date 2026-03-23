@@ -22,7 +22,7 @@ class Group extends Model
     }
 
     // Maestro dueño del grupo
-    public function owner()
+    public function ownerUser()
     {
         return $this->belongsTo(User::class, 'owner');
     }

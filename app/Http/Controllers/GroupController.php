@@ -14,7 +14,7 @@ class GroupController extends Controller
  
     public function index()
     {
-        $groups = Group::with(['owner', 'period'])
+        $groups = Group::with(['ownerUser', 'period'])
             ->withCount(['students', 'assignments'])
             ->get();
         return $this->successResponse(
@@ -31,7 +31,7 @@ class GroupController extends Controller
             ...$data,
             'owner' => $request->user()->id, // el maestro autenticado es el dueño
         ]);
-        $group->load(['owner', 'period']);
+        $group->load(['ownerUser', 'period']);
         return $this->successResponse(
             new GroupResource($group),
             'Grupo creado exitosamente',
@@ -41,7 +41,7 @@ class GroupController extends Controller
  
     public function show($id)
     {
-        $group = Group::with(['owner', 'period', 'units', 'students', 'assignments', 'schedules'])
+        $group = Group::with(['ownerUser', 'period', 'units', 'students', 'assignments', 'schedules'])
             ->withCount(['students', 'assignments'])
             ->find($id);
         if (!$group) {
@@ -61,7 +61,7 @@ class GroupController extends Controller
             return $this->errorResponse('Grupo no encontrado', 404);
         }
         $group->update($request->validated());
-        $group->load(['owner', 'period']);
+        $group->load(['ownerUser', 'period']);
  
         return $this->successResponse(
             new GroupResource($group),

@@ -18,7 +18,7 @@ class GroupResource extends JsonResource
             'active'      => $this->active,
  
             // En lugar de IDs crudos, devolvemos los objetos completos
-            'owner'  => new UserResource($this->whenLoaded('owner')),
+            'owner'  => new UserResource($this->whenLoaded('ownerUser')),
             'period' => new PeriodResource($this->whenLoaded('period')),
  
             // Relaciones opcionales según el contexto
