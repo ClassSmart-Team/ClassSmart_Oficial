@@ -70,13 +70,22 @@ class UserSeeder extends Seeder
                 "role_id" => 4
             ],
             [
+                "name" => "Paloma Johanna",
+                "lastname" => "Portillo Hernandez",
+                "email" => "paloma@gmail.com",
+                "password" => Hash::make("palomapaloma"),
+                "cellphone" => "8711353535",
+                "active" => true,
+                "role_id" => 3
+            ],
+            [
                 "name" => "Ana Lilia",
                 "lastname" => "Hernandez Viesca",
                 "email" => "ana@gmail.com",
                 "password" => Hash::make("anaana"),
                 "cellphone" => "8711353535",
                 "active" => true,
-                "role_id" => 3
+                "role_id" => 2
             ]
         ]);
     }
