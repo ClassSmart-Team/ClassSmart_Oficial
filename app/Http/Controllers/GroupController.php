@@ -11,12 +11,37 @@ use Illuminate\Http\Request;
 class GroupController extends Controller
 {
     use ApiResponse;
+
+    private function userCanViewAllGroups($user): bool
+    {
+        return $user && $user->isAdmin();
+    }
+
+    private function findAccessibleGroup(int|string $id): ?Group
+    {
+        $user = request()->user();
+        $query = Group::query();
+
+        // El admin puede acceder a cualquier grupo; el maestro solo a los suyos.
+        if (!$this->userCanViewAllGroups($user)) {
+            $query->where('owner', $user->id);
+        }
+
+        return $query->find($id);
+    }
  
     public function index()
     {
-        $groups = Group::with(['ownerUser', 'period'])
-            ->withCount(['students', 'assignments'])
-            ->get();
+        $user = request()->user();
+        $query = Group::with(['ownerUser', 'period'])
+            ->withCount(['students', 'assignments']);
+
+        if (!$this->userCanViewAllGroups($user)) {
+            $query->where('owner', $user->id);
+        }
+
+        $groups = $query->get();
+
         return $this->successResponse(
             GroupResource::collection($groups),
             'Grupos obtenidos exitosamente',
@@ -41,12 +66,15 @@ class GroupController extends Controller
  
     public function show($id)
     {
-        $group = Group::with(['ownerUser', 'period', 'units', 'students', 'assignments', 'schedules'])
-            ->withCount(['students', 'assignments'])
-            ->find($id);
+        $group = $this->findAccessibleGroup($id);
+
         if (!$group) {
-            return $this->errorResponse('Grupo no encontrado', 404);
+            return $this->errorResponse('Grupo no encontrado o sin permisos para verlo', 404);
         }
+
+        $group->load(['ownerUser', 'period', 'units', 'students', 'assignments', 'schedules']);
+        $group->loadCount(['students', 'assignments']);
+
         return $this->successResponse(
             new GroupResource($group),
             'Grupo obtenido exitosamente',
@@ -56,9 +84,9 @@ class GroupController extends Controller
  
     public function update(GroupRequest $request, $id)
     {
-        $group = Group::find($id);
+        $group = $this->findAccessibleGroup($id);
         if (!$group) {
-            return $this->errorResponse('Grupo no encontrado', 404);
+            return $this->errorResponse('Grupo no encontrado o sin permisos para editarlo', 404);
         }
         $group->update($request->validated());
         $group->load(['ownerUser', 'period']);
@@ -72,9 +100,9 @@ class GroupController extends Controller
  
     public function destroy($id)
     {
-        $group = Group::find($id);
+        $group = $this->findAccessibleGroup($id);
         if (!$group) {
-            return $this->errorResponse('Grupo no encontrado', 404);
+            return $this->errorResponse('Grupo no encontrado o sin permisos para eliminarlo', 404);
         }
         $group->delete();
         return $this->successResponse(null, 'Grupo eliminado exitosamente', 200);
@@ -86,10 +114,12 @@ class GroupController extends Controller
         $request->validate([
             'student_id' => ['required', 'integer', 'exists:users,id'],
         ]);
-        $group = Group::find($id);
+
+        $group = $this->findAccessibleGroup($id);
         if (!$group) {
-            return $this->errorResponse('Grupo no encontrado', 404);
+            return $this->errorResponse('Grupo no encontrado o sin permisos para editarlo', 404);
         }
+
         $group->students()->syncWithoutDetaching([$request->student_id]);
         return $this->successResponse(null, 'Alumno agregado al grupo exitosamente', 200);
     }
@@ -100,10 +130,12 @@ class GroupController extends Controller
         $request->validate([
             'student_id' => ['required', 'integer', 'exists:users,id'],
         ]);
-        $group = Group::find($id);
+
+        $group = $this->findAccessibleGroup($id);
         if (!$group) {
-            return $this->errorResponse('Grupo no encontrado', 404);
+            return $this->errorResponse('Grupo no encontrado o sin permisos para editarlo', 404);
         }
+
         $group->students()->detach($request->student_id);
         return $this->successResponse(null, 'Alumno removido del grupo exitosamente', 200);
     }
