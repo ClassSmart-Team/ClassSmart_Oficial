@@ -52,10 +52,21 @@ Route::middleware('auth:sanctum')->group(function () {
  
     // Admin (Rol 1)
     Route::middleware('role:1')->group(function () {
-        Route::apiResource('users', UserController::class);
+        Route::get("users", [UserController::class, 'index']);
+        Route::post("users", [UserController::class, 'store']);
+        Route::get("users/{id}", [UserController::class, 'show']);
+        Route::put("users/{id}", [UserController::class, 'update']);
+        Route::delete("users/{id}", [UserController::class, 'destroy']);
         Route::apiResource('roles', RoleController::class);
-        Route::apiResource('periods', PeriodController::class);
-        Route::apiResource('schedules', ScheduleController::class);
+        Route::post("periods", [PeriodController::class, 'store']);
+        Route::get("periods/{id}", [PeriodController::class, 'show']);
+        Route::put("periods/{id}", [PeriodController::class, 'update']);
+        Route::delete("periods/{id}", [PeriodController::class, 'destroy']);
+        Route::get("schedules", [ScheduleController::class, 'index']);
+        Route::post("schedules", [ScheduleController::class, 'store']);
+        Route::get("schedules/{id}", [ScheduleController::class, 'show']);
+        Route::put("schedules/{id}", [ScheduleController::class, 'update']);
+        Route::delete("schedules/{id}", [ScheduleController::class, 'destroy']);
     });
  
  
@@ -80,6 +91,9 @@ Route::middleware('auth:sanctum')->group(function () {
  
         // Calificar entregas
         Route::patch('submissions/{submission}/grade', [SubmissionController::class, 'grade']);
+
+        //Horarios
+        Route::get("periods", [PeriodController::class, 'index']);
     });
  
 
