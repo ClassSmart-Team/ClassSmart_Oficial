@@ -1,7 +1,7 @@
 <?php
  
 namespace App\Http\Controllers;
- 
+//comentario de prueba
 use App\Http\Requests\GroupRequest;
 use App\Http\Resources\GroupResource;
 use App\Models\Group;
