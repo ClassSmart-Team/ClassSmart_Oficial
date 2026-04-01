@@ -70,9 +70,31 @@ Route::middleware('auth:sanctum')->group(function () {
     });
  
  
+    /* Admin, Maestro y Alumno (roles 1, 2 y 3) */
+    Route::middleware('role:1,2,3')->group(function () {
+        // Grupos - consulta
+        Route::get('groups', [GroupController::class, 'index']);
+        Route::get('groups/{id}', [GroupController::class, 'show']);
+
+        // Ver y eliminar entregas
+        Route::get('submissions', [SubmissionController::class, 'index']);
+        Route::get('submissions/{id}', [SubmissionController::class, 'show']);
+        Route::delete('submissions/{id}', [SubmissionController::class, 'destroy']);
+
+        // Archivos
+        Route::apiResource('files', FileController::class);
+        Route::apiResource('group-files', GroupFileController::class);
+
+        // Chats y mensajes - padres excluidos
+        Route::apiResource('chats', ChatController::class);
+        Route::apiResource('messages', MessageController::class);
+    });
+
     // Admin y Maestro (roles 1 y 2)
     Route::middleware('role:1,2')->group(function () {
-        Route::apiResource('groups', GroupController::class);
+        Route::post('groups', [GroupController::class, 'store']);
+        Route::put('groups/{id}', [GroupController::class, 'update']);
+        Route::delete('groups/{id}', [GroupController::class, 'destroy']);
         Route::post('groups/{group}/students', [GroupController::class, 'addStudent']);
         Route::delete('groups/{group}/students', [GroupController::class, 'removeStudent']);
  
@@ -99,23 +121,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Solo Alumno (role 3)
     Route::middleware('role:3')->group(function () {
+        Route::get('my-groups', [GroupController::class, 'myGroups']);
+        Route::get('my-groups/{id}', [GroupController::class, 'myGroupShow']);
         Route::post('submissions', [SubmissionController::class, 'store']);
-    });
- 
-    /* Admin, Maestro y Alumno (roles 1, 2 y 3) */
-    Route::middleware('role:1,2,3')->group(function () {
-        // Ver y eliminar entregas
-        Route::get('submissions', [SubmissionController::class, 'index']);
-        Route::get('submissions/{id}', [SubmissionController::class, 'show']);
-        Route::delete('submissions/{id}', [SubmissionController::class, 'destroy']);
- 
-        // Archivos
-        Route::apiResource('files', FileController::class);
-        Route::apiResource('group-files', GroupFileController::class);
- 
-        // Chats y mensajes — padres excluidos
-        Route::apiResource('chats', ChatController::class);
-        Route::apiResource('messages', MessageController::class);
     });
  
 });

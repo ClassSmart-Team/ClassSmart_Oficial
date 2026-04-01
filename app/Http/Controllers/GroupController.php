@@ -6,6 +6,7 @@ use App\Http\Requests\GroupRequest;
 use App\Http\Resources\GroupResource;
 use App\Models\Group;
 use App\Traits\ApiResponse;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
  
 class GroupController extends Controller
@@ -17,34 +18,73 @@ class GroupController extends Controller
         return $user && $user->isAdmin();
     }
 
+    private function groupsVisibleToUser($user): Builder
+    {
+        $query = Group::query();
+
+        if ($this->userCanViewAllGroups($user)) {
+            return $query;
+        }
+
+        if ($user && $user->isTeacher()) {
+            return $query->where('owner', $user->id);
+        }
+
+        if ($user && $user->isStudent()) {
+            return $query->whereHas('students', function ($students) use ($user) {
+                $students
+                    ->where('users.id', $user->id)
+                    ->where('student_groups.active', true);
+            });
+        }
+
+        return $query->whereRaw('1 = 0');
+    }
+
     private function findAccessibleGroup(int|string $id): ?Group
     {
         $user = request()->user();
-        $query = Group::query();
 
-        // El admin puede acceder a cualquier grupo; el maestro solo a los suyos.
-        if (!$this->userCanViewAllGroups($user)) {
-            $query->where('owner', $user->id);
-        }
-
-        return $query->find($id);
+        return $this->groupsVisibleToUser($user)->find($id);
     }
  
     public function index()
     {
         $user = request()->user();
-        $query = Group::with(['ownerUser', 'period'])
+        $query = $this->groupsVisibleToUser($user)
+            ->with(['ownerUser', 'period'])
             ->withCount(['students', 'assignments']);
-
-        if (!$this->userCanViewAllGroups($user)) {
-            $query->where('owner', $user->id);
-        }
 
         $groups = $query->get();
 
         return $this->successResponse(
             GroupResource::collection($groups),
             'Grupos obtenidos exitosamente',
+            200
+        );
+    }
+
+    public function myGroups()
+    {
+        $user = request()->user();
+
+        if (!$user || !$user->isStudent()) {
+            return $this->errorResponse('No tienes permisos para consultar esta ruta', 403);
+        }
+
+        $groups = Group::query()
+            ->whereHas('students', function ($students) use ($user) {
+                $students
+                    ->where('users.id', $user->id)
+                    ->where('student_groups.active', true);
+            })
+            ->with(['ownerUser', 'period'])
+            ->withCount(['students', 'assignments'])
+            ->get();
+
+        return $this->successResponse(
+            GroupResource::collection($groups),
+            'Mis grupos obtenidos exitosamente',
             200
         );
     }
