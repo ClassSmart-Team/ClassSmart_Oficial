@@ -61,6 +61,10 @@ class UnitController extends Controller
         $data = $request->validated();
         $user = $request->user();
 
+        if (!$user || (!$user->isAdmin() && !$user->isTeacher())) {
+            return $this->errorResponse('No tienes permisos para crear unidades', 403);
+        }
+
         if ($user && $user->isTeacher()) {
             $ownsGroup = Group::query()
                 ->whereKey($data['group_id'])
@@ -70,6 +74,15 @@ class UnitController extends Controller
             if (!$ownsGroup) {
                 return $this->errorResponse('No puedes crear unidades en grupos que no te pertenecen', 403);
             }
+        }
+
+        $orderAlreadyUsed = Unit::query()
+            ->where('group_id', $data['group_id'])
+            ->where('order', $data['order'])
+            ->exists();
+
+        if ($orderAlreadyUsed) {
+            return $this->errorResponse('Ya existe una unidad con ese orden en el grupo seleccionado', 422);
         }
 
         $unit = Unit::create($data);
