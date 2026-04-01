@@ -88,6 +88,37 @@ class GroupController extends Controller
             200
         );
     }
+
+    public function myGroupShow($id)
+    {
+        $user = request()->user();
+
+        if (!$user || !$user->isStudent()) {
+            return $this->errorResponse('No tienes permisos para consultar esta ruta', 403);
+        }
+
+        $group = Group::query()
+            ->whereKey($id)
+            ->whereHas('students', function ($students) use ($user) {
+                $students
+                    ->where('users.id', $user->id)
+                    ->where('student_groups.active', true);
+            })
+            ->first();
+
+        if (!$group) {
+            return $this->errorResponse('Grupo no encontrado o no estas inscrito en el', 404);
+        }
+
+        $group->load(['ownerUser', 'period', 'units', 'students', 'assignments', 'schedules']);
+        $group->loadCount(['students', 'assignments']);
+
+        return $this->successResponse(
+            new GroupResource($group),
+            'Mi grupo obtenido exitosamente',
+            200
+        );
+    }
  
     public function store(GroupRequest $request)
     {
