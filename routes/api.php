@@ -72,10 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
  
     /* Admin, Maestro y Alumno (roles 1, 2 y 3) */
     Route::middleware('role:1,2,3')->group(function () {
-        // Grupos - consulta
-        Route::get('groups', [GroupController::class, 'index']);
-        Route::get('groups/{id}', [GroupController::class, 'show']);
-
+        
         // Ver y eliminar entregas
         Route::get('submissions', [SubmissionController::class, 'index']);
         Route::get('submissions/{id}', [SubmissionController::class, 'show']);
@@ -92,6 +89,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Admin y Maestro (roles 1 y 2)
     Route::middleware('role:1,2')->group(function () {
+        // Grupos - consulta
+        Route::get('groups', [GroupController::class, 'index']);
+        Route::get('groups/{id}', [GroupController::class, 'show']);
         Route::post('groups', [GroupController::class, 'store']);
         Route::put('groups/{id}', [GroupController::class, 'update']);
         Route::delete('groups/{id}', [GroupController::class, 'destroy']);
@@ -123,6 +123,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:3')->group(function () {
         Route::get('my-groups', [GroupController::class, 'myGroups']);
         Route::get('my-groups/{id}', [GroupController::class, 'myGroupShow']);
+        Route::get('my-assignments', [AssignmentController::class, 'myAssignments']);
+        Route::get('my-assignments/{id}', [AssignmentController::class, 'myAssignmentShow']);
+        Route::get('my-submissions', [SubmissionController::class, 'mySubmissions']);
+        Route::get('my-submissions/{id}', [SubmissionController::class, 'mySubmissionShow']);
+        Route::get('my-assignment-submissions/{assignment}', [SubmissionController::class, 'myAssignmentSubmissions']);
         Route::post('submissions', [SubmissionController::class, 'store']);
     });
  

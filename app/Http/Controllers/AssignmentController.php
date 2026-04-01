@@ -8,19 +8,109 @@ use App\Models\Assignment;
 use App\Models\File;
 use App\Models\Notification;
 use App\Traits\ApiResponse;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
  
 class AssignmentController extends Controller
 {
     use ApiResponse;
- 
-    public function index()
+
+    private function visibleAssignmentsQuery($user): Builder
     {
-        $assignments = Assignment::with(['group', 'unit'])
+        $query = Assignment::query();
+
+        if ($user && $user->isAdmin()) {
+            return $query;
+        }
+
+        if ($user && $user->isTeacher()) {
+            return $query->whereHas('group', function ($groupQuery) use ($user) {
+                $groupQuery->where('owner', $user->id);
+            });
+        }
+
+        if ($user && $user->isStudent()) {
+            return $query->whereHas('group.students', function ($studentsQuery) use ($user) {
+                $studentsQuery
+                    ->where('users.id', $user->id)
+                    ->where('student_groups.active', true);
+            });
+        }
+
+        return $query->whereRaw('1 = 0');
+    }
+
+    private function findAccessibleAssignment(int|string $id): ?Assignment
+    {
+        $user = request()->user();
+
+        return $this->visibleAssignmentsQuery($user)->find($id);
+    }
+ 
+    public function index(Request $request)
+    {
+        $assignments = $this->visibleAssignmentsQuery($request->user())
+            ->with(['group', 'unit'])
             ->withCount('submissions')
             ->get();
         return $this->successResponse(
             AssignmentResource::collection($assignments),
             'Tareas obtenidas exitosamente',
+            200
+        );
+    }
+
+    public function myAssignments(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user || !$user->isStudent()) {
+            return $this->errorResponse('No tienes permisos para consultar esta ruta', 403);
+        }
+
+        $assignments = Assignment::query()
+            ->whereHas('group.students', function ($studentsQuery) use ($user) {
+                $studentsQuery
+                    ->where('users.id', $user->id)
+                    ->where('student_groups.active', true);
+            })
+            ->with(['group', 'unit'])
+            ->withCount('submissions')
+            ->get();
+
+        return $this->successResponse(
+            AssignmentResource::collection($assignments),
+            'Mis tareas obtenidas exitosamente',
+            200
+        );
+    }
+
+    public function myAssignmentShow($id)
+    {
+        $user = request()->user();
+
+        if (!$user || !$user->isStudent()) {
+            return $this->errorResponse('No tienes permisos para consultar esta ruta', 403);
+        }
+
+        $assignment = Assignment::query()
+            ->whereKey($id)
+            ->whereHas('group.students', function ($studentsQuery) use ($user) {
+                $studentsQuery
+                    ->where('users.id', $user->id)
+                    ->where('student_groups.active', true);
+            })
+            ->with(['group', 'unit', 'files'])
+            ->withCount('submissions')
+            ->first();
+
+        if (!$assignment) {
+            return $this->errorResponse('Tarea no encontrada o no perteneces al grupo', 404);
+        }
+
+        return $this->successResponse(
+            new AssignmentResource($assignment),
+            'Mi tarea obtenida exitosamente',
             200
         );
     }
@@ -70,13 +160,15 @@ class AssignmentController extends Controller
  
     public function show($id)
     {
-        $assignment = Assignment::with(['group', 'unit', 'files', 'submissions'])
-            ->withCount('submissions')
-            ->find($id);
- 
+        $assignment = $this->findAccessibleAssignment($id);
+
         if (!$assignment) {
-            return $this->errorResponse('Tarea no encontrada', 404);
+            return $this->errorResponse('Tarea no encontrada o sin permisos para verla', 404);
         }
+
+        $assignment->load(['group', 'unit', 'files', 'submissions'])
+            ->withCount('submissions')
+        ;
  
         return $this->successResponse(
             new AssignmentResource($assignment),
@@ -87,10 +179,10 @@ class AssignmentController extends Controller
  
     public function update(AssignmentRequest $request, $id)
     {
-        $assignment = Assignment::find($id);
+        $assignment = $this->findAccessibleAssignment($id);
  
         if (!$assignment) {
-            return $this->errorResponse('Tarea no encontrada', 404);
+            return $this->errorResponse('Tarea no encontrada o sin permisos para editarla', 404);
         }
         $data = $request->validated();
         unset($data['files']);
@@ -122,10 +214,10 @@ class AssignmentController extends Controller
  
     public function destroy($id)
     {
-        $assignment = Assignment::find($id);
+        $assignment = $this->findAccessibleAssignment($id);
  
         if (!$assignment) {
-            return $this->errorResponse('Tarea no encontrada', 404);
+            return $this->errorResponse('Tarea no encontrada o sin permisos para eliminarla', 404);
         }
         $assignment->delete();
         return $this->successResponse(null, 'Tarea eliminada exitosamente', 200);

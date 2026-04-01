@@ -3,24 +3,149 @@
 namespace App\Http\Controllers;
  
 use App\Http\Requests\SubmissionRequest;
+use App\Http\Resources\AssignmentResource;
 use App\Http\Resources\SubmissionResource;
 use App\Models\Assignment;
 use App\Models\File;
 use App\Models\Notification;
 use App\Models\Submission;
 use App\Traits\ApiResponse;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
  
 class SubmissionController extends Controller
 {
     use ApiResponse;
- 
-    public function index()
+
+    private function visibleSubmissionsQuery($user): Builder
     {
-        $submissions = Submission::with(['student', 'assignment', 'files'])->get();
+        $query = Submission::query();
+
+        if ($user && $user->isAdmin()) {
+            return $query;
+        }
+
+        if ($user && $user->isTeacher()) {
+            return $query->whereHas('assignment.group', function ($groupQuery) use ($user) {
+                $groupQuery->where('owner', $user->id);
+            });
+        }
+
+        if ($user && $user->isStudent()) {
+            return $query->where('student_id', $user->id);
+        }
+
+        return $query->whereRaw('1 = 0');
+    }
+
+    private function findAccessibleSubmission(int|string $id): ?Submission
+    {
+        $user = request()->user();
+
+        return $this->visibleSubmissionsQuery($user)->find($id);
+    }
+ 
+    public function index(Request $request)
+    {
+        $query = $this->visibleSubmissionsQuery($request->user())
+            ->with(['student', 'assignment', 'files']);
+
+        if ($request->filled('assignment_id')) {
+            $query->where('assignment_id', $request->integer('assignment_id'));
+        }
+
+        $submissions = $query->get();
+
         return $this->successResponse(
             SubmissionResource::collection($submissions),
             'Entregas obtenidas exitosamente',
+            200
+        );
+    }
+
+    public function mySubmissions(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user || !$user->isStudent()) {
+            return $this->errorResponse('No tienes permisos para consultar esta ruta', 403);
+        }
+
+        $query = Submission::query()
+            ->where('student_id', $user->id)
+            ->with(['student', 'assignment', 'files']);
+
+        if ($request->filled('assignment_id')) {
+            $query->where('assignment_id', $request->integer('assignment_id'));
+        }
+
+        $submissions = $query->get();
+
+        return $this->successResponse(
+            SubmissionResource::collection($submissions),
+            'Mis entregas obtenidas exitosamente',
+            200
+        );
+    }
+
+    public function mySubmissionShow($id)
+    {
+        $user = request()->user();
+
+        if (!$user || !$user->isStudent()) {
+            return $this->errorResponse('No tienes permisos para consultar esta ruta', 403);
+        }
+
+        $submission = Submission::query()
+            ->where('student_id', $user->id)
+            ->with(['student', 'assignment', 'files'])
+            ->find($id);
+
+        if (!$submission) {
+            return $this->errorResponse('Entrega no encontrada o no te pertenece', 404);
+        }
+
+        return $this->successResponse(
+            new SubmissionResource($submission),
+            'Mi entrega obtenida exitosamente',
+            200
+        );
+    }
+
+    public function myAssignmentSubmissions(Request $request, $assignmentId)
+    {
+        $user = $request->user();
+
+        if (!$user || !$user->isStudent()) {
+            return $this->errorResponse('No tienes permisos para consultar esta ruta', 403);
+        }
+
+        $assignment = Assignment::with('group', 'unit')
+            ->whereKey($assignmentId)
+            ->whereHas('group.students', function ($studentsQuery) use ($user) {
+                $studentsQuery
+                    ->where('users.id', $user->id)
+                    ->where('student_groups.active', true);
+            })
+            ->first();
+
+        if (!$assignment) {
+            return $this->errorResponse('Tarea no encontrada o no perteneces al grupo', 404);
+        }
+
+        $submissions = Submission::query()
+            ->where('assignment_id', $assignment->id)
+            ->where('student_id', $user->id)
+            ->with(['student', 'assignment', 'files'])
+            ->get();
+
+        return $this->successResponse(
+            [
+                'assignment' => new AssignmentResource($assignment),
+                'submissions' => SubmissionResource::collection($submissions),
+                'has_submission' => $submissions->isNotEmpty(),
+            ],
+            'Mis entregas de la tarea obtenidas exitosamente',
             200
         );
     }
@@ -31,6 +156,28 @@ class SubmissionController extends Controller
         if (!$assignment) {
             return $this->errorResponse('Tarea no encontrada', 404);
         }
+
+        $student = $request->user();
+        $isEnrolled = $assignment->group
+            ? $assignment->group->students()
+                ->where('users.id', $student->id)
+                ->where('student_groups.active', true)
+                ->exists()
+            : false;
+
+        if (!$isEnrolled) {
+            return $this->errorResponse('No puedes entregar tareas de un grupo donde no estas inscrito', 403);
+        }
+
+        $alreadySubmitted = Submission::query()
+            ->where('assignment_id', $assignment->id)
+            ->where('student_id', $student->id)
+            ->exists();
+
+        if ($alreadySubmitted) {
+            return $this->errorResponse('Ya realizaste una entrega para esta tarea', 422);
+        }
+
         if (!$assignment->isActive()) {
             return $this->errorResponse('Esta tarea ya no acepta entregas', 422);
         }
@@ -38,7 +185,7 @@ class SubmissionController extends Controller
         $isLate = $submissionDate > $assignment->end_date;
         $submission = Submission::create([
             'assignment_id'   => $request->assignment_id,
-            'student_id'      => $request->user()->id,
+            'student_id'      => $student->id,
             'submission_date' => $submissionDate,
             'status'          => $isLate ? 'Entregada tarde' : 'Entregada',
         ]);
@@ -47,7 +194,7 @@ class SubmissionController extends Controller
             foreach ($request->file('files') as $file) {
                 File::create([
                     'submission_id' => $submission->id,
-                    'user_id'       => $request->user()->id,
+                    'user_id'       => $student->id,
                     'context'       => 'student_submission',
                     'file_name'     => $file->getClientOriginalName(),
                     'file_path'     => $file->store('submissions', 'public'),
@@ -57,7 +204,6 @@ class SubmissionController extends Controller
             }
         }
         // Notificar al maestro automáticamente
-        $student = $request->user();
         $notification = Notification::create([
             'created_by'         => $student->id,
             'title'              => 'Tarea entregada',
@@ -80,10 +226,13 @@ class SubmissionController extends Controller
  
     public function show($id)
     {
-        $submission = Submission::with(['student', 'assignment', 'files'])->find($id);
+        $submission = $this->findAccessibleSubmission($id);
         if (!$submission) {
-            return $this->errorResponse('Entrega no encontrada', 404);
+            return $this->errorResponse('Entrega no encontrada o sin permisos para verla', 404);
         }
+
+        $submission->load(['student', 'assignment', 'files']);
+
         return $this->successResponse(
             new SubmissionResource($submission),
             'Entrega obtenida exitosamente',
@@ -98,10 +247,15 @@ class SubmissionController extends Controller
             'grade'    => ['required', 'numeric', 'min:0', 'max:10'],
             'feedback' => ['nullable', 'string'],
         ]);
-        $submission = Submission::with(['student', 'assignment'])->find($id);
+
+        $submission = $this->visibleSubmissionsQuery($request->user())
+            ->with(['student', 'assignment'])
+            ->find($id);
+
         if (!$submission) {
-            return $this->errorResponse('Entrega no encontrada', 404);
+            return $this->errorResponse('Entrega no encontrada o sin permisos para calificarla', 404);
         }
+
         $submission->update([
             'grade'    => $request->grade,
             'feedback' => $request->feedback,
@@ -135,9 +289,9 @@ class SubmissionController extends Controller
  
     public function destroy($id)
     {
-        $submission = Submission::find($id);
+        $submission = $this->findAccessibleSubmission($id);
         if (!$submission) {
-            return $this->errorResponse('Entrega no encontrada', 404);
+            return $this->errorResponse('Entrega no encontrada o sin permisos para eliminarla', 404);
         }
         $submission->delete();
         return $this->successResponse(null, 'Entrega eliminada exitosamente', 200);
