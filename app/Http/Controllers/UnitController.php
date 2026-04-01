@@ -4,16 +4,51 @@ namespace App\Http\Controllers;
  
 use App\Http\Requests\UnitRequest;
 use App\Http\Resources\UnitResource;
+use App\Models\Group;
 use App\Models\Unit;
 use App\Traits\ApiResponse;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
  
 class UnitController extends Controller
 {
     use ApiResponse;
- 
-    public function index()
+
+    private function visibleUnitsQuery($user): Builder
     {
-        $units = Unit::with('group')->withCount('assignments')->get();
+        $query = Unit::query();
+
+        if ($user && $user->isAdmin()) {
+            return $query;
+        }
+
+        if ($user && $user->isTeacher()) {
+            return $query->whereHas('group', function ($groupQuery) use ($user) {
+                $groupQuery->where('owner', $user->id);
+            });
+        }
+
+        return $query->whereRaw('1 = 0');
+    }
+
+    private function findAccessibleUnit(int|string $id): ?Unit
+    {
+        return $this->visibleUnitsQuery(request()->user())->find($id);
+    }
+ 
+    public function index(Request $request)
+    {
+        $query = $this->visibleUnitsQuery($request->user())
+            ->with('group')
+            ->withCount('assignments')
+            ->orderBy('order');
+
+        if ($request->filled('group_id')) {
+            $query->where('group_id', $request->integer('group_id'));
+        }
+
+        $units = $query->get();
+
         return $this->successResponse(
             UnitResource::collection($units),
             'Unidades obtenidas exitosamente',
@@ -23,7 +58,21 @@ class UnitController extends Controller
  
     public function store(UnitRequest $request)
     {
-        $unit = Unit::create($request->validated());
+        $data = $request->validated();
+        $user = $request->user();
+
+        if ($user && $user->isTeacher()) {
+            $ownsGroup = Group::query()
+                ->whereKey($data['group_id'])
+                ->where('owner', $user->id)
+                ->exists();
+
+            if (!$ownsGroup) {
+                return $this->errorResponse('No puedes crear unidades en grupos que no te pertenecen', 403);
+            }
+        }
+
+        $unit = Unit::create($data);
         $unit->load('group');
         return $this->successResponse(
             new UnitResource($unit),
@@ -34,12 +83,15 @@ class UnitController extends Controller
  
     public function show($id)
     {
-        $unit = Unit::with(['group', 'assignments', 'gradeRecords'])
-            ->withCount('assignments')
-            ->find($id);
+        $unit = $this->findAccessibleUnit($id);
+
         if (!$unit) {
-            return $this->errorResponse('Unidad no encontrada', 404);
+            return $this->errorResponse('Unidad no encontrada o sin permisos para verla', 404);
         }
+
+        $unit->load(['group', 'assignments', 'gradeRecords']);
+        $unit->loadCount('assignments');
+
         return $this->successResponse(
             new UnitResource($unit),
             'Unidad obtenida exitosamente',
@@ -49,11 +101,27 @@ class UnitController extends Controller
  
     public function update(UnitRequest $request, $id)
     {
-        $unit = Unit::find($id);
+        $unit = $this->findAccessibleUnit($id);
+
         if (!$unit) {
-            return $this->errorResponse('Unidad no encontrada', 404);
+            return $this->errorResponse('Unidad no encontrada o sin permisos para editarla', 404);
         }
-        $unit->update($request->validated());
+
+        $data = $request->validated();
+        $user = $request->user();
+
+        if ($user && $user->isTeacher()) {
+            $ownsTargetGroup = Group::query()
+                ->whereKey($data['group_id'])
+                ->where('owner', $user->id)
+                ->exists();
+
+            if (!$ownsTargetGroup) {
+                return $this->errorResponse('No puedes mover unidades a grupos que no te pertenecen', 403);
+            }
+        }
+
+        $unit->update($data);
         $unit->load('group');
         return $this->successResponse(
             new UnitResource($unit),
@@ -64,10 +132,12 @@ class UnitController extends Controller
  
     public function destroy($id)
     {
-        $unit = Unit::find($id);
+        $unit = $this->findAccessibleUnit($id);
+
         if (!$unit) {
-            return $this->errorResponse('Unidad no encontrada', 404);
+            return $this->errorResponse('Unidad no encontrada o sin permisos para eliminarla', 404);
         }
+
         $unit->delete();
         return $this->successResponse(null, 'Unidad eliminada exitosamente', 200);
     }

@@ -52,7 +52,7 @@ class GroupController extends Controller
     {
         $user = request()->user();
         $query = $this->groupsVisibleToUser($user)
-            ->with(['ownerUser', 'period'])
+            ->with(['ownerUser', 'period', "units"])
             ->withCount(['students', 'assignments']);
 
         $groups = $query->get();
@@ -78,7 +78,7 @@ class GroupController extends Controller
                     ->where('users.id', $user->id)
                     ->where('student_groups.active', true);
             })
-            ->with(['ownerUser', 'period'])
+            ->with(['ownerUser', 'period', 'units'])
             ->withCount(['students', 'assignments'])
             ->get();
 
@@ -127,7 +127,7 @@ class GroupController extends Controller
             ...$data,
             'owner' => $request->user()->id, // el maestro autenticado es el dueño
         ]);
-        $group->load(['ownerUser', 'period']);
+        $group->load(['ownerUser', 'period', 'units']);
         return $this->successResponse(
             new GroupResource($group),
             'Grupo creado exitosamente',
@@ -160,7 +160,7 @@ class GroupController extends Controller
             return $this->errorResponse('Grupo no encontrado o sin permisos para editarlo', 404);
         }
         $group->update($request->validated());
-        $group->load(['ownerUser', 'period']);
+        $group->load(['ownerUser', 'period', 'units']);
  
         return $this->successResponse(
             new GroupResource($group),
