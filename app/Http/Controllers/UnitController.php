@@ -1,16 +1,16 @@
 <?php
- 
+
 namespace App\Http\Controllers;
- 
+
 use App\Http\Requests\UnitRequest;
 use App\Http\Resources\UnitResource;
 use App\Models\Unit;
 use App\Traits\ApiResponse;
- 
+
 class UnitController extends Controller
 {
     use ApiResponse;
- 
+
     public function index()
     {
         $units = Unit::with('group')->withCount('assignments')->get();
@@ -20,7 +20,7 @@ class UnitController extends Controller
             200
         );
     }
- 
+
     public function store(UnitRequest $request)
     {
         $unit = Unit::create($request->validated());
@@ -31,7 +31,7 @@ class UnitController extends Controller
             201
         );
     }
- 
+
     public function show($id)
     {
         $unit = Unit::with(['group', 'assignments', 'gradeRecords'])
@@ -46,7 +46,7 @@ class UnitController extends Controller
             200
         );
     }
- 
+
     public function update(UnitRequest $request, $id)
     {
         $unit = Unit::find($id);
@@ -61,7 +61,7 @@ class UnitController extends Controller
             200
         );
     }
- 
+
     public function destroy($id)
     {
         $unit = Unit::find($id);
