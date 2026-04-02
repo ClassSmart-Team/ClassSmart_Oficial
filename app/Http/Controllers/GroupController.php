@@ -196,7 +196,13 @@ class GroupController extends Controller
         })
             ->get(['id', 'name', 'lastname', 'email']); // Traemos solo lo necesario
 
-        return $this->successResponse($students, 'Alumnos disponibles para inscripción recuperados');
+        return $this->successResponse(
+            [
+                "status" => true,
+                "message" => "alumos disponibles",
+                "data" => $students,
+                "error" => null
+            ], 200);
     }
 
     // Agregar alumno al grupo
