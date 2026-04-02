@@ -1,5 +1,5 @@
 <?php
- 
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\GroupRequest;
@@ -8,7 +8,7 @@ use App\Models\Group;
 use App\Traits\ApiResponse;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
- 
+
 class GroupController extends Controller
 {
     use ApiResponse;
@@ -47,7 +47,7 @@ class GroupController extends Controller
 
         return $this->groupsVisibleToUser($user)->find($id);
     }
- 
+
     public function index()
     {
         $user = request()->user();
@@ -119,7 +119,7 @@ class GroupController extends Controller
             200
         );
     }
- 
+
     public function store(GroupRequest $request)
     {
         $data = $request->validated();
@@ -134,7 +134,7 @@ class GroupController extends Controller
             201
         );
     }
- 
+
     public function show($id)
     {
         $group = $this->findAccessibleGroup($id);
@@ -152,7 +152,7 @@ class GroupController extends Controller
             200
         );
     }
- 
+
     public function update(GroupRequest $request, $id)
     {
         $group = $this->findAccessibleGroup($id);
@@ -161,14 +161,14 @@ class GroupController extends Controller
         }
         $group->update($request->validated());
         $group->load(['ownerUser', 'period', 'units']);
- 
+
         return $this->successResponse(
             new GroupResource($group),
             'Grupo actualizado exitosamente',
             200
         );
     }
- 
+
     public function destroy($id)
     {
         $group = $this->findAccessibleGroup($id);
@@ -178,7 +178,27 @@ class GroupController extends Controller
         $group->delete();
         return $this->successResponse(null, 'Grupo eliminado exitosamente', 200);
     }
- 
+
+    //consumir alumnos que no esten en un grupo en especifico
+    public function getAvailableStudents(Request $request, $id)
+    {
+        // 1. Verificamos que el grupo exista primero
+        $group = Group::find($id);
+        if (!$group) {
+            return $this->errorResponse('Grupo no encontrado', 404);
+        }
+
+        // 2. Consultamos los alumnos disponibles
+        $students = User::where('role_id', 3) // Solo alumnos
+        ->where('active', true)          // Solo alumnos activos (opcional pero recomendado)
+        ->whereDoesntHave('groups', function ($query) use ($id) {
+            $query->where('group_id', $id); // Que NO estén ya en este grupo específico
+        })
+            ->get(['id', 'name', 'lastname', 'email']); // Traemos solo lo necesario
+
+        return $this->successResponse($students, 'Alumnos disponibles para inscripción recuperados');
+    }
+
     // Agregar alumno al grupo
     public function addStudent(Request $request, $id)
     {
@@ -194,7 +214,7 @@ class GroupController extends Controller
         $group->students()->syncWithoutDetaching([$request->student_id]);
         return $this->successResponse(null, 'Alumno agregado al grupo exitosamente', 200);
     }
- 
+
     // Remover alumno del grupo
     public function removeStudent(Request $request, $id)
     {

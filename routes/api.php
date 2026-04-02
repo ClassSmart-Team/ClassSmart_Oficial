@@ -1,5 +1,5 @@
 <?php
- 
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
@@ -18,38 +18,38 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\UnitController;
- 
-/*Roles de Cajon 
-1 = Admin 
-2 = Teacher 
-3 = Student 
+
+/*Roles de Cajon
+1 = Admin
+2 = Teacher
+3 = Student
 4 = Parent
 */
- 
+
 // Rutas públicas (sin token)
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
- 
+
 // Rutas protegidas (piden token))
 Route::middleware('auth:sanctum')->group(function () {
- 
+
     // Auth (cualquier usuario autentificado)
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
- 
+
     // Configuración personal (todos los roles)
     Route::get('configurations', [ConfigurationController::class, 'show']);
     Route::patch('configurations', [ConfigurationController::class, 'update']);
- 
+
     // Notificaciones - ver y marcar como leída (todos los roles)
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::get('notifications/{id}', [NotificationController::class, 'show']);
     Route::patch('notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
- 
+
     // Calificaciones — ver: todos los roles (padre ve las de sus hijos)
     Route::get('grade-records', [GradeRecordController::class, 'index']);
     Route::get('grade-records/{id}', [GradeRecordController::class, 'show']);
- 
+
     // Admin (Rol 1)
     Route::middleware('role:1')->group(function () {
         Route::get("users", [UserController::class, 'index']);
@@ -68,11 +68,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put("schedules/{id}", [ScheduleController::class, 'update']);
         Route::delete("schedules/{id}", [ScheduleController::class, 'destroy']);
     });
- 
- 
+
+
     /* Admin, Maestro y Alumno (roles 1, 2 y 3) */
     Route::middleware('role:1,2,3')->group(function () {
-        
+
         // Ver y eliminar entregas
         Route::get('submissions', [SubmissionController::class, 'index']);
         Route::get('submissions/{id}', [SubmissionController::class, 'show']);
@@ -90,6 +90,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin y Maestro (roles 1 y 2)
     Route::middleware('role:1,2')->group(function () {
         // Grupos - consulta
+        Route::get('groups/available-students/{id}', [GroupController::class, 'getAvailableStudents']);
         Route::get('groups', [GroupController::class, 'index']);
         Route::get('groups/{id}', [GroupController::class, 'show']);
         Route::post('groups', [GroupController::class, 'store']);
@@ -97,27 +98,27 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('groups/{id}', [GroupController::class, 'destroy']);
         Route::post('groups/{group}/students', [GroupController::class, 'addStudent']);
         Route::delete('groups/{group}/students', [GroupController::class, 'removeStudent']);
- 
+
         Route::apiResource('units', UnitController::class);
         Route::apiResource('announcements', AnnouncementController::class);
         Route::apiResource('assignments', AssignmentController::class);
- 
+
         // Calificaciones — crear, editar, eliminar
         Route::post('grade-records', [GradeRecordController::class, 'store']);
         Route::put('grade-records/{id}', [GradeRecordController::class, 'update']);
         Route::delete('grade-records/{id}', [GradeRecordController::class, 'destroy']);
- 
+
         // Notificaciones — crear y eliminar
         Route::post('notifications', [NotificationController::class, 'store']);
         Route::delete('notifications/{id}', [NotificationController::class, 'destroy']);
- 
+
         // Calificar entregas
         Route::patch('submissions/{submission}/grade', [SubmissionController::class, 'grade']);
 
         //Horarios
         Route::get("periods", [PeriodController::class, 'index']);
     });
- 
+
 
     // Solo Alumno (role 3)
     Route::middleware('role:3')->group(function () {
@@ -130,5 +131,5 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('my-assignment-submissions/{assignment}', [SubmissionController::class, 'myAssignmentSubmissions']);
         Route::post('submissions', [SubmissionController::class, 'store']);
     });
- 
+
 });
