@@ -8,7 +8,7 @@ use App\Models\Group;
 use App\Traits\ApiResponse;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-
+use App\Models\User;
 class GroupController extends Controller
 {
     use ApiResponse;
