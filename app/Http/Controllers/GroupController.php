@@ -194,7 +194,7 @@ class GroupController extends Controller
         ->whereDoesntHave('groups', function ($query) use ($id) {
             $query->where('group_id', $id); // Que NO estén ya en este grupo específico
         })
-            ->get(['id', 'name', 'lastname', 'email']); // Traemos solo lo necesario
+            ->get(); // Traemos solo lo necesario
 
         return $this->successResponse(
             $students,
