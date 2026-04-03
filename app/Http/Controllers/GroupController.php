@@ -9,6 +9,7 @@ use App\Traits\ApiResponse;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use App\Models\User;
+
 class GroupController extends Controller
 {
     use ApiResponse;
@@ -194,7 +195,7 @@ class GroupController extends Controller
         ->whereDoesntHave('groups', function ($query) use ($id) {
             $query->where('group_id', $id); // Que NO estén ya en este grupo específico
         })
-            ->get(); // Traemos solo lo necesario
+            ->get(); // Traemos TODA LA INFORMACION
 
         return $this->successResponse(
             $students,
