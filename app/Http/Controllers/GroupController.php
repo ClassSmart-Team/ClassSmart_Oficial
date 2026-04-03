@@ -9,6 +9,7 @@ use App\Traits\ApiResponse;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Http\Resources\UserResource;
 
 class GroupController extends Controller
 {
@@ -197,7 +198,7 @@ class GroupController extends Controller
         })
             ->get(); // Traemos TODA LA INFORMACION
 
-        return $this->successResponse($students,'Alumnos disponibles para inscripción recuperados', 200);
+        return $this->successResponse(UserResource::collection($students),'Alumnos disponibles para inscripción recuperados', 200);
     }
 
     // Agregar alumno al grupo
