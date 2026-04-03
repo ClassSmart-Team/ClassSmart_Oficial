@@ -191,7 +191,8 @@ class GroupController extends Controller
         }
 
         // 2. Consultamos los alumnos disponibles
-        $students = User::where('role_id', 3) // Solo alumnos
+        $students = User::with('role')->
+        where('role_id', 3) // Solo alumnos
         ->where('active', true)          // Solo alumnos activos (opcional pero recomendado)
         ->whereDoesntHave('groups', function ($query) use ($id) {
             $query->where('group_id', $id); // Que NO estén ya en este grupo específico
