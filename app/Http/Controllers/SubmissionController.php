@@ -12,10 +12,30 @@ use App\Models\Submission;
 use App\Traits\ApiResponse;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
  
 class SubmissionController extends Controller
 {
     use ApiResponse;
+
+    private function storeSubmissionAttachment(UploadedFile $uploadedFile, Submission $submission, int $userId): File
+    {
+        $filePath = $uploadedFile->store('submissions', 'public');
+
+        if (!$filePath) {
+            abort(500, 'No se pudo guardar el archivo de la entrega');
+        }
+
+        return File::create([
+            'submission_id' => $submission->id,
+            'user_id'       => $userId,
+            'context'       => 'student_submission',
+            'file_name'     => $uploadedFile->getClientOriginalName(),
+            'file_path'     => $filePath,
+            'type'          => $uploadedFile->getClientMimeType(),
+            'size'          => $uploadedFile->getSize(),
+        ]);
+    }
 
     private function visibleSubmissionsQuery($user): Builder
     {
@@ -190,18 +210,19 @@ class SubmissionController extends Controller
             'status'          => $isLate ? 'Entregada tarde' : 'Entregada',
         ]);
         // Guardar archivos adjuntos si vienen
+        $uploadedFiles = [];
+
         if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $file) {
-                File::create([
-                    'submission_id' => $submission->id,
-                    'user_id'       => $student->id,
-                    'context'       => 'student_submission',
-                    'file_name'     => $file->getClientOriginalName(),
-                    'file_path'     => $file->store('submissions', 'public'),
-                    'type'          => $file->getClientMimeType(),
-                    'size'          => $file->getSize(),
-                ]);
-            }
+            $files = $request->file('files');
+            $uploadedFiles = array_merge($uploadedFiles, is_array($files) ? $files : [$files]);
+        }
+
+        if ($request->hasFile('file')) {
+            $uploadedFiles[] = $request->file('file');
+        }
+
+        foreach ($uploadedFiles as $uploadedFile) {
+            $this->storeSubmissionAttachment($uploadedFile, $submission, $student->id);
         }
         // Notificar al maestro automáticamente
         $notification = Notification::create([

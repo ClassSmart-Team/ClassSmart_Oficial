@@ -10,10 +10,30 @@ use App\Models\Notification;
 use App\Traits\ApiResponse;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
  
 class AssignmentController extends Controller
 {
     use ApiResponse;
+
+    private function storeAssignmentAttachment(UploadedFile $uploadedFile, Assignment $assignment, int $userId): File
+    {
+        $filePath = $uploadedFile->store('assignments', 'public');
+
+        if (!$filePath) {
+            abort(500, 'No se pudo guardar el archivo de la tarea');
+        }
+
+        return File::create([
+            'assignment_id' => $assignment->id,
+            'user_id'       => $userId,
+            'context'       => 'assignment_material',
+            'file_name'     => $uploadedFile->getClientOriginalName(),
+            'file_path'     => $filePath,
+            'type'          => $uploadedFile->getClientMimeType(),
+            'size'          => $uploadedFile->getSize(),
+        ]);
+    }
 
     private function visibleAssignmentsQuery($user): Builder
     {
@@ -122,18 +142,19 @@ class AssignmentController extends Controller
         $assignment = Assignment::create($data);
  
         // Guardar archivos adjuntos del maestro
+        $uploadedFiles = [];
+
         if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $file) {
-                File::create([
-                    'assignment_id' => $assignment->id,
-                    'user_id'       => $request->user()->id,
-                    'context'       => 'assignment_material',
-                    'file_name'     => $file->getClientOriginalName(),
-                    'file_path'     => $file->store('assignments', 'public'),
-                    'type'          => $file->getClientMimeType(),
-                    'size'          => $file->getSize(),
-                ]);
-            }
+            $files = $request->file('files');
+            $uploadedFiles = array_merge($uploadedFiles, is_array($files) ? $files : [$files]);
+        }
+
+        if ($request->hasFile('file')) {
+            $uploadedFiles[] = $request->file('file');
+        }
+
+        foreach ($uploadedFiles as $uploadedFile) {
+            $this->storeAssignmentAttachment($uploadedFile, $assignment, $request->user()->id);
         }
  
         // Notificar a los alumnos del grupo automáticamente
@@ -189,18 +210,19 @@ class AssignmentController extends Controller
         $assignment->update($data);
  
         // Agregar nuevos archivos si vienen
+        $uploadedFiles = [];
+
         if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $file) {
-                File::create([
-                    'assignment_id' => $assignment->id,
-                    'user_id'       => $request->user()->id,
-                    'context'       => 'assignment_material',
-                    'file_name'     => $file->getClientOriginalName(),
-                    'file_path'     => $file->store('assignments', 'public'),
-                    'type'          => $file->getClientMimeType(),
-                    'size'          => $file->getSize(),
-                ]);
-            }
+            $files = $request->file('files');
+            $uploadedFiles = array_merge($uploadedFiles, is_array($files) ? $files : [$files]);
+        }
+
+        if ($request->hasFile('file')) {
+            $uploadedFiles[] = $request->file('file');
+        }
+
+        foreach ($uploadedFiles as $uploadedFile) {
+            $this->storeAssignmentAttachment($uploadedFile, $assignment, $request->user()->id);
         }
  
         $assignment->load(['group', 'unit', 'files']);

@@ -18,6 +18,7 @@ class SubmissionRequest extends FormRequest
             // files es opcional — el alumno puede entregar sin archivo (comentario, texto, etc.)
             'files'         => ['nullable', 'array'],
             'files.*'       => ['file', 'max:10240'], // max 10MB por archivo
+            'file'          => ['nullable', 'file', 'max:10240'],
             // student_id y submission_date se asignan automáticamente en el controller
         ];
     }
@@ -28,6 +29,7 @@ class SubmissionRequest extends FormRequest
             'assignment_id.required' => 'La tarea es obligatoria.',
             'assignment_id.exists'   => 'La tarea seleccionada no existe.',
             'files.*.max'            => 'Cada archivo no puede pesar más de 10MB.',
+            'file.max'               => 'El archivo no puede pesar más de 10MB.',
         ];
     }
 }
