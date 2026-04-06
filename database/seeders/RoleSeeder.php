@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Role;
+use Illuminate\Support\Facades\DB;
 class RoleSeeder extends Seeder
 {
     /**
@@ -12,19 +13,14 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        Role::insert([
-            [
-                "description" => "Admin"
-            ],
-            [
-                "description" => "Teacher"
-            ],
-            [
-                "description" => "Student"
-            ],
-            [
-                "description" => "Parent"
-            ],
-        ]);
+        
+    DB::table('roles')->delete(); // limpia sin romper tests
+
+    DB::table('roles')->insert([
+        ["id" => 1, "description" => "Admin"],
+        ["id" => 2, "description" => "Teacher"],
+        ["id" => 3, "description" => "Student"],
+        ["id" => 4, "description" => "Parent"],
+    ]);
     }
 }
