@@ -9,7 +9,6 @@ class Unit extends Model
     protected $fillable = [
         'group_id',
         'name',
-        'order', // campo agregado en la migración corregida
         'start_date',
         'end_date',
     ];

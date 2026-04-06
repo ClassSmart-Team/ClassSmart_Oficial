@@ -14,7 +14,6 @@ class UnitResource extends JsonResource
         return [
             'id'         => $this->id,
             'name'       => $this->name,
-            'order'      => $this->order,
             'start_date' => $this->start_date->format('Y-m-d'),
             'end_date'   => $this->end_date->format('Y-m-d'),
  

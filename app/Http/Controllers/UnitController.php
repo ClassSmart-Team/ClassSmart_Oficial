@@ -41,7 +41,7 @@ class UnitController extends Controller
         $query = $this->visibleUnitsQuery($request->user())
             ->with('group')
             ->withCount('assignments')
-            ->orderBy('order');
+            ->orderBy("start_date", "asc");
 
         if ($request->filled('group_id')) {
             $query->where('group_id', $request->integer('group_id'));
@@ -74,15 +74,6 @@ class UnitController extends Controller
             if (!$ownsGroup) {
                 return $this->errorResponse('No puedes crear unidades en grupos que no te pertenecen', 403);
             }
-        }
-
-        $orderAlreadyUsed = Unit::query()
-            ->where('group_id', $data['group_id'])
-            ->where('order', $data['order'])
-            ->exists();
-
-        if ($orderAlreadyUsed) {
-            return $this->errorResponse('Ya existe una unidad con ese orden en el grupo seleccionado', 422);
         }
 
         $unit = Unit::create($data);
