@@ -28,7 +28,7 @@ class UserSeeder extends Seeder
                 "name" => "Laura Elena",
                 "lastname" => "Castañeda Davila",
                 "email" => "laura@gmail.com",
-                "password" => Hash::make("chupenla"),
+                "password" => Hash::make("yaweyes"),
                 "cellphone" => "8711381969",
                 "active" => true,
                 "role_id" => 2
