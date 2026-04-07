@@ -187,9 +187,7 @@ class AssignmentController extends Controller
             return $this->errorResponse('Tarea no encontrada o sin permisos para verla', 404);
         }
 
-        $assignment->load(['group', 'unit', 'files', 'submissions'])
-            ->withCount('submissions')
-        ;
+        $assignment->loadCount('submissions')->load(["submissions.student", "submissions.files", "group", "unit", "files"]);
  
         return $this->successResponse(
             new AssignmentResource($assignment),
