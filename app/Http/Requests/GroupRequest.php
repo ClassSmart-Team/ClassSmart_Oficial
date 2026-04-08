@@ -13,10 +13,12 @@ class GroupRequest extends FormRequest
  
     public function rules(): array
     {
+        $isUpdate = $this->isMethod('PUT') || $this->isMethod('PATCH');
+
         return [
-            'period_id'   => ['required', 'integer', 'exists:periods,id'],
-            'name'        => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            'period_id'   => [$isUpdate ? 'sometimes' : 'required', 'integer', 'exists:periods,id'],
+            'name'        => [$isUpdate ? 'sometimes' : 'required', 'string', 'max:255'],
+            'description' => [$isUpdate ? 'sometimes' : 'nullable', 'string'],
             'active'      => ['boolean'],
         ];
     }

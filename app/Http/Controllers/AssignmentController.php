@@ -188,7 +188,7 @@ class AssignmentController extends Controller
         }
 
         $assignment->loadCount('submissions')
-        ->load(["submissions.student", "submissions.files", "group", "unit", "files"]);
+        ->load(["submissions","submissions.student", "submissions.files", "group", "unit", "files"]);
  
         return $this->successResponse(
             new AssignmentResource($assignment),
