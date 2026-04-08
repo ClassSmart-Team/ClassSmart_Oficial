@@ -17,8 +17,8 @@ class UserRequest extends FormRequest
         $isUpdate = $this->isMethod('PUT') || $this->isMethod('PATCH');
  
         return [
-            'name'      => ['required', 'string', 'max:255'],
-            'lastname'  => ['nullable', 'string', 'max:255'],
+            'name'      => [$isUpdate ? 'sometimes' : 'required', 'string', 'max:255'],
+            'lastname'  => [$isUpdate ? 'sometimes' : 'nullable', 'string', 'max:255'],
             'email'     => [
                 $isUpdate ? 'sometimes' : 'required',
                 'email',
@@ -26,7 +26,7 @@ class UserRequest extends FormRequest
                 'unique:users,email,' . $this->route('user'),
             ],
             'password'  => [$isUpdate ? 'sometimes' : 'required', 'string', 'min:6'],
-            'cellphone' => ['nullable', 'string', 'max:20'],
+            'cellphone' => [$isUpdate ? 'sometimes' : 'nullable', 'string', 'max:20'],
             'active'    => [$isUpdate ? 'sometimes' : 'required', 'boolean'],
             'role_id'   => [$isUpdate ? 'sometimes' : 'required', 'integer', 'exists:roles,id'], // admin asigna el rol
         ];
