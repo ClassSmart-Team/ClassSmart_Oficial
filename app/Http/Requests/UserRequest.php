@@ -1,37 +1,70 @@
 <?php
- 
+
 namespace App\Http\Requests;
- 
+
 use Illuminate\Foundation\Http\FormRequest;
- 
+use Illuminate\Validation\Rule;
+
 class UserRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // La autorización real se maneja en el controller
+        return true;
     }
- 
+
     public function rules(): array
     {
-        // En edición (PUT/PATCH) email y password son opcionales
         $isUpdate = $this->isMethod('PUT') || $this->isMethod('PATCH');
- 
+        $userId = $this->route('id') ?? $this->route('user');
+
         return [
-            'name'      => [$isUpdate ? 'sometimes' : 'required', 'string', 'max:255'],
-            'lastname'  => [$isUpdate ? 'sometimes' : 'nullable', 'string', 'max:255'],
-            'email'     => [
+            'name' => [
+                $isUpdate ? 'sometimes' : 'required',
+                'string',
+                'max:255',
+            ],
+
+            'lastname' => [
+                $isUpdate ? 'sometimes' : 'nullable',
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'email' => [
                 $isUpdate ? 'sometimes' : 'required',
                 'email',
                 'max:255',
-                'unique:users,email,' . $this->route('id'), // Ignorar el email del usuario actual en update
+                Rule::unique('users', 'email')->ignore($userId),
             ],
-            'password'  => [$isUpdate ? 'sometimes' : 'required', 'string', 'min:6'],
-            'cellphone' => [$isUpdate ? 'sometimes' : 'nullable', 'string', 'max:20'],
-            'active'    => [$isUpdate ? 'sometimes' : 'required', 'boolean'],
-            'role_id'   => [$isUpdate ? 'sometimes' : 'required', 'integer', 'exists:roles,id'], // admin asigna el rol
+
+            'password' => [
+                $isUpdate ? 'sometimes' : 'required',
+                'nullable',
+                'string',
+                'min:6',
+            ],
+
+            'cellphone' => [
+                $isUpdate ? 'sometimes' : 'nullable',
+                'nullable',
+                'string',
+                'max:20',
+            ],
+
+            'active' => [
+                $isUpdate ? 'sometimes' : 'required',
+                'boolean',
+            ],
+
+            'role_id' => [
+                $isUpdate ? 'sometimes' : 'required',
+                'integer',
+                'exists:roles,id',
+            ],
         ];
     }
- 
+
     public function messages(): array
     {
         return [
