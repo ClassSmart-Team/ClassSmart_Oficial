@@ -23,7 +23,7 @@ class UserRequest extends FormRequest
                 $isUpdate ? 'sometimes' : 'required',
                 'email',
                 'max:255',
-                'unique:users,email,' . $this->route('user'),
+                'unique:users,email,' . $this->route('id'),
             ],
             'password'  => [$isUpdate ? 'sometimes' : 'required', 'string', 'min:6'],
             'cellphone' => ['nullable', 'string', 'max:20'],
