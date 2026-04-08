@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AssignmentController;
+use App\Http\Controllers\AuditController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\FileController;
@@ -52,6 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Admin (Rol 1)
     Route::middleware('role:1')->group(function () {
+        Route::get('audits', [AuditController::class, 'index']);
         Route::get("users", [UserController::class, 'index']);
         Route::post("users", [UserController::class, 'store']);
         Route::get("users/{id}", [UserController::class, 'show']);
