@@ -28,7 +28,7 @@ class UserRequest extends FormRequest
             'password'  => [$isUpdate ? 'sometimes' : 'required', 'string', 'min:6'],
             'cellphone' => ['nullable', 'string', 'max:20'],
             'active'    => ['boolean'],
-            'role_id'   => ['required', 'integer', 'exists:roles,id'], // admin asigna el rol
+            'role_id'   => [$isUpdate ? 'sometimes' : 'required', 'integer', 'exists:roles,id'], // admin asigna el rol
         ];
     }
  
