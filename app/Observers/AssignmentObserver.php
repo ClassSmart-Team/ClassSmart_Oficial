@@ -12,12 +12,7 @@ class AssignmentObserver
         AuditLogger::record(
             'assignments.created',
             "Tarea creada: {$assignment->title}",
-            $assignment,
-            [
-                'group_id' => $assignment->group_id,
-                'unit_id' => $assignment->unit_id,
-                'status' => $assignment->status,
-            ]
+            $assignment
         );
     }
 
@@ -27,26 +22,10 @@ class AssignmentObserver
             return;
         }
 
-        $changes = $assignment->getChanges();
-        unset($changes['updated_at']);
-
-        if (empty($changes)) {
-            return;
-        }
-
-        $oldValues = [];
-        foreach (array_keys($changes) as $field) {
-            $oldValues[$field] = $assignment->getOriginal($field);
-        }
-
         AuditLogger::record(
             'assignments.updated',
             "Tarea editada: {$assignment->title}",
-            $assignment,
-            [
-                'old' => $oldValues,
-                'new' => $changes,
-            ]
+            $assignment
         );
     }
 
@@ -55,11 +34,7 @@ class AssignmentObserver
         AuditLogger::record(
             'assignments.deleted',
             "Tarea eliminada: {$assignment->title}",
-            $assignment,
-            [
-                'group_id' => $assignment->group_id,
-                'unit_id' => $assignment->unit_id,
-            ]
+            $assignment
         );
     }
 }

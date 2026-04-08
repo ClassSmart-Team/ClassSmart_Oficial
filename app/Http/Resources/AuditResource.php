@@ -17,9 +17,6 @@ class AuditResource extends JsonResource
             'description' => $this->description,
             'entity_type' => $this->entity_type,
             'entity_id' => $this->entity_id,
-            'metadata' => $this->metadata,
-            'ip_address' => $this->ip_address,
-            'user_agent' => $this->user_agent,
             'actor' => [
                 'id' => $this->actor?->id,
                 'name' => $this->actor?->name,

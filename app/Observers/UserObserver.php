@@ -16,10 +16,6 @@ class UserObserver
                 'users.created',
                 "Usuario {$user->email} creado por {$actor->email}",
                 $user,
-                [
-                    'created_user_id' => $user->id,
-                    'created_role_id' => $user->role_id,
-                ],
                 $actor->id
             );
 
@@ -30,10 +26,6 @@ class UserObserver
             'auth.registered',
             "Nueva cuenta registrada: {$user->email}",
             $user,
-            [
-                'registered_user_id' => $user->id,
-                'role_id' => $user->role_id,
-            ],
             $actor?->id
         );
     }
@@ -42,18 +34,6 @@ class UserObserver
     {
         if (!$user->wasChanged()) {
             return;
-        }
-
-        $changes = $user->getChanges();
-        unset($changes['updated_at']);
-
-        if (empty($changes)) {
-            return;
-        }
-
-        $oldValues = [];
-        foreach (array_keys($changes) as $field) {
-            $oldValues[$field] = $user->getOriginal($field);
         }
 
         $action = 'users.updated';
@@ -67,11 +47,7 @@ class UserObserver
         AuditLogger::record(
             $action,
             $description,
-            $user,
-            [
-                'old' => $oldValues,
-                'new' => $changes,
-            ]
+            $user
         );
     }
 }
