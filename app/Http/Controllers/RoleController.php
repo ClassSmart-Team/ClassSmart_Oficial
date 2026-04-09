@@ -12,14 +12,15 @@ class RoleController extends Controller
     use ApiResponse;
  
     public function index()
-    {
-        $roles = Role::all();
-        return $this->successResponse(
-            RoleResource::collection($roles),
-            'Roles obtenidos exitosamente',
-            200
-        );
-    }
+{
+    $roles = Role::withCount('users')->get();
+
+    return $this->successResponse(
+        RoleResource::collection($roles),
+        'Roles obtenidos exitosamente',
+        200
+    );
+}
  
     public function store(RoleRequest $request)
     {
@@ -60,13 +61,22 @@ class RoleController extends Controller
     }
  
     public function destroy($id)
-    {
-        $role = Role::find($id);
-        if (!$role) {
-            return $this->errorResponse('Rol no encontrado', 404);
-        }
-        $role->delete();
- 
-        return $this->successResponse(null, 'Rol eliminado exitosamente', 200);
+{
+    $role = Role::withCount('users')->find($id);
+
+    if (!$role) {
+        return $this->errorResponse('Rol no encontrado', 404);
     }
+
+    if ($role->users_count > 0) {
+        return $this->errorResponse(
+            'No se puede eliminar el rol porque tiene usuarios asignados.',
+            422
+        );
+    }
+
+    $role->delete();
+
+    return $this->successResponse(null, 'Rol eliminado exitosamente', 200);
+}
 }
