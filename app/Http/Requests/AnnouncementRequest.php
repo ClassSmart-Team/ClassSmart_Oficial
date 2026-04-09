@@ -1,26 +1,28 @@
 <?php
- 
+
 namespace App\Http\Requests;
- 
+
 use Illuminate\Foundation\Http\FormRequest;
- 
+
 class AnnouncementRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // La autorización real se maneja en el controller
+        return true;
     }
- 
+
     public function rules(): array
     {
+        $isUpdate = $this->isMethod('PUT') || $this->isMethod('PATCH');
+
         return [
-            'group_id'        => ['required', 'integer', 'exists:groups,id'],
-            'title'           => ['required', 'string', 'max:255'],
-            'message'         => ['required', 'string'],
-            'attachment'      => ['nullable', 'file', 'max:10240'], // max 10MB
+            'group_id'   => [$isUpdate ? 'sometimes' : 'required', 'integer', 'exists:groups,id'],
+            'title'      => [$isUpdate ? 'sometimes' : 'required', 'string', 'max:255'],
+            'message'    => [$isUpdate ? 'sometimes' : 'required', 'string'],
+            'attachment' => ['nullable', 'file', 'max:10240'],
         ];
     }
- 
+
     public function messages(): array
     {
         return [
@@ -32,4 +34,3 @@ class AnnouncementRequest extends FormRequest
         ];
     }
 }
- 
