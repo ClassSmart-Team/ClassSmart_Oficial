@@ -2,21 +2,27 @@
 
 namespace App\Notifications;
 
-use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Notifications\Notification;
 
-class VerifyEmailCustom extends VerifyEmail
+class VerifyEmailCustom extends Notification
 {
-    protected function buildMailMessage($url)
+    use Queueable;
+
+    public function via(object $notifiable): array
+    {
+        return ['mail'];
+    }
+
+    public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Confirma tu cuenta en ClassSmart')
-            ->greeting('Hola!')
-            ->line('Gracias por registrarte en ClassSmart.')
-            ->line('Para comenzar, necesitas confirmar tu correo electrónico.')
-            ->action('Confirmar mi cuenta', $url)
-            ->line('Si tú no creaste esta cuenta, ignora este correo.');
+            ->subject('Bienvenido a ClassSmart')
+            ->greeting('Hola '.$notifiable->name.'!')
+            ->line('Tu cuenta fue creada correctamente en ClassSmart.')
+            ->line('Ya puedes iniciar sesion con tu correo y contrasena.')
+            ->action('Ir a ClassSmart', config('app.url'))
+            ->line('Si tu no creaste esta cuenta, ignora este correo.');
     }
 }

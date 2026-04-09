@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\VerifyEmailCustom;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -127,5 +128,11 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Chat::class, 'chat_user')
                     ->withTimestamps();
+    }
+
+    // Mantiene la llamada simple de Laravel, pero envia tu notificacion personalizada.
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmailCustom());
     }
 }
