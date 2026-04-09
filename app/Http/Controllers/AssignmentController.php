@@ -120,7 +120,9 @@ class AssignmentController extends Controller
                     ->where('users.id', $user->id)
                     ->where('student_groups.active', true);
             })
-            ->with(['group', 'unit', 'files'])
+            ->with(['group', 'unit', 'files', "submissions" => function ($submissionQuery) use ($user) {
+                $submissionQuery->where('student_id', $user->id)->with('files');
+            }])
             ->withCount('submissions')
             ->first();
 
