@@ -125,11 +125,18 @@ class GroupController extends Controller
     public function store(GroupRequest $request)
     {
         $data = $request->validated();
-        $group = Group::create([
-            ...$data,
-            'owner' => $request->user()->id, // el maestro autenticado es el dueño
-        ]);
+        $authUser = $request->user();
+
+        if ($authUser->isAdmin()) {
+            $data['owner'] = $data['owner'] ?? $authUser->id;
+        } else {
+            $data['owner'] = $authUser->id;
+        }
+
+        $group = Group::create($data);
         $group->load(['ownerUser', 'period', 'units']);
+        $group->loadCount(['students', 'assignments']);
+
         return $this->successResponse(
             new GroupResource($group),
             'Grupo creado exitosamente',
@@ -155,14 +162,24 @@ class GroupController extends Controller
         );
     }
 
-    public function update(GroupRequest $request, $id)
+   public function update(GroupRequest $request, $id)
     {
         $group = $this->findAccessibleGroup($id);
+
         if (!$group) {
             return $this->errorResponse('Grupo no encontrado o sin permisos para editarlo', 404);
         }
-        $group->update($request->validated());
+
+        $data = $request->validated();
+        $authUser = $request->user();
+
+        if (!$authUser->isAdmin()) {
+            unset($data['owner']);
+        }
+
+        $group->update($data);
         $group->load(['ownerUser', 'period', 'units']);
+        $group->loadCount(['students', 'assignments']);
 
         return $this->successResponse(
             new GroupResource($group),
@@ -174,11 +191,15 @@ class GroupController extends Controller
     public function destroy($id)
     {
         $group = $this->findAccessibleGroup($id);
+
         if (!$group) {
             return $this->errorResponse('Grupo no encontrado o sin permisos para eliminarlo', 404);
         }
-        $group->delete();
-        return $this->successResponse(null, 'Grupo eliminado exitosamente', 200);
+
+        $group->active = false;
+        $group->save();
+
+        return $this->successResponse(null, 'Grupo desactivado exitosamente', 200);
     }
 
     //consumir alumnos que no esten en un grupo en especifico
