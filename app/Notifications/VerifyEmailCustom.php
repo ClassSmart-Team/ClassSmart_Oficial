@@ -33,6 +33,6 @@ class VerifyEmailCustom extends Notification
             ->line('Tu cuenta fue creada correctamente en ClassSmart.')
             ->line('Ya puedes iniciar sesion con tu correo y contraseña.')
 
-            ->action('Ir a ClassSmart', config('app.frontend.url'));
+            ->action('Ir a ClassSmart', config('app.frontend_url'));
     }
 }
