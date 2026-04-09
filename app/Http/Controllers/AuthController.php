@@ -10,7 +10,8 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
- 
+use App\Notifications\VerifyEmailCustom;
+
 class AuthController extends Controller
 {
     use ApiResponse;
@@ -40,27 +41,26 @@ class AuthController extends Controller
     // Registro público — solo crea la cuenta, sin token
     // El usuario debe hacer login después
     public function register(RegisterRequest $request)
-    {
-        $data = $request->validated();
- 
-        $user = User::create([
-            'name'      => $data['name'],
-            'lastname'  => $data['lastname'],
-            'email'     => $data['email'],
-            'password'  => Hash::make($data['password']),
-            'cellphone' => $data['cellphone'] ?? null,
-            'role_id'   => 3, // Student por defecto
-        ]);
+{
+    $data = $request->validated();
 
-        $user->sendEmailVerificationNotification();
- 
-        return $this->successResponse(
-            new UserResource($user),
-            'Registro exitoso, ahora puedes iniciar sesión',
-            201
-        );
-        
-    }
+    $user = User::create([
+        'name'      => $data['name'],
+        'lastname'  => $data['lastname'],
+        'email'     => $data['email'],
+        'password'  => Hash::make($data['password']),
+        'cellphone' => $data['cellphone'] ?? null,
+        'role_id'   => 3,
+    ]);
+
+    Mail::to($user->email)->send(new VerifyEmailCustom($user));
+
+    return $this->successResponse(
+        new UserResource($user),
+        'Registro exitoso, ahora puedes iniciar sesión',
+        201
+    );
+}
  
     // Logout — elimina el token actual
     public function logout(Request $request)
