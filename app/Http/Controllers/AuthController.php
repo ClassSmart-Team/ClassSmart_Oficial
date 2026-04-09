@@ -51,6 +51,8 @@ class AuthController extends Controller
             'cellphone' => $data['cellphone'],
             'role_id'   => 3, // Student por defecto
         ]);
+
+        $user->sendEmailVerificationNotification();
  
         return $this->successResponse(
             new UserResource($user),
