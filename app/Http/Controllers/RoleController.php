@@ -12,19 +12,21 @@ class RoleController extends Controller
     use ApiResponse;
  
     public function index()
-{
-    $roles = Role::withCount('users')->get();
+    {
+        $roles = Role::withCount('users')->get();
 
-    return $this->successResponse(
-        RoleResource::collection($roles),
-        'Roles obtenidos exitosamente',
-        200
-    );
-}
+        return $this->successResponse(
+            RoleResource::collection($roles),
+            'Roles obtenidos exitosamente',
+            200
+        );
+    }
  
     public function store(RoleRequest $request)
     {
         $role = Role::create($request->validated());
+        $role->loadCount('users');
+
         return $this->successResponse(
             new RoleResource($role),
             'Rol creado exitosamente',
@@ -34,10 +36,12 @@ class RoleController extends Controller
  
     public function show($id)
     {
-        $role = Role::find($id);
+        $role = Role::withCount('users')->find($id);
+
         if (!$role) {
             return $this->errorResponse('Rol no encontrado', 404);
         }
+
         return $this->successResponse(
             new RoleResource($role),
             'Rol obtenido exitosamente',
@@ -48,10 +52,13 @@ class RoleController extends Controller
     public function update(RoleRequest $request, $id)
     {
         $role = Role::find($id);
+
         if (!$role) {
             return $this->errorResponse('Rol no encontrado', 404);
         }
+
         $role->update($request->validated());
+        $role->loadCount('users');
 
         return $this->successResponse(
             new RoleResource($role),
