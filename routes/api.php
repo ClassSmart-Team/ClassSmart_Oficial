@@ -28,6 +28,7 @@ use App\Http\Controllers\UnitController;
 */
 
 // Rutas públicas (sin token)
+Route::get('/test-mail', [AuthController::class, 'testMail']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 

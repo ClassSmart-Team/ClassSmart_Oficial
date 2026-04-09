@@ -73,4 +73,25 @@ class AuthController extends Controller
  
         return $this->successResponse(new UserResource($user), 'Usuario autenticado', 200);
     }
+
+    public function testMail()
+    {
+        try {
+            Mail::mailer('resend')->raw(' Este es un correo de prueba desde ClassSmart', function ($message) {
+                $message->to('pemiliano607@yahoo.com.mx')
+                        ->subject('Test Laravel + Resend');
+            });
+
+            return response()->json([
+                'ok' => true,
+                'mailer' => config('mail.default'),
+                'message' => 'Correo enviado'
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'ok' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
