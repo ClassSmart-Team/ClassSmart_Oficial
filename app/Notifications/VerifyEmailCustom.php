@@ -21,7 +21,7 @@ class VerifyEmailCustom extends Notification
             ->subject('Bienvenido a ClassSmart')
             ->greeting('Hola '.$notifiable->name.'!')
             ->line('Tu cuenta fue creada correctamente en ClassSmart.')
-            ->line('Ya puedes iniciar sesion con tu correo y contrasena.')
+            ->line('Ya puedes iniciar sesion con tu correo y contraseña.')
             ->action('Ir a ClassSmart', config('app.url'))
             ->line('Si tu no creaste esta cuenta, ignora este correo.');
     }
