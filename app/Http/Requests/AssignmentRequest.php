@@ -12,20 +12,21 @@ class AssignmentRequest extends FormRequest
     }
  
     public function rules(): array
-    {
-        return [
-            'title'       => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string'],
-            'start_date'  => ['required', 'date'],
-            'end_date'    => ['required', 'date', 'after:start_date'],
-            'status'      => ['required', 'in:Activa,Cerrada,Cancelada'],
-            'group_id'    => ['required', 'integer', 'exists:groups,id'],
-            'unit_id'     => ['required', 'integer', 'exists:units,id'],
-            // Archivos adjuntos opcionales (material del maestro)
-            'files'          => ['nullable', 'array'],
-            'files.*'        => ['file', 'max:10240'], // max 10MB por archivo
-        ];
-    }
+{
+    $isUpdate = $this->isMethod('PUT') || $this->isMethod('PATCH');
+
+    return [
+        'title'       => [$isUpdate ? 'sometimes' : 'required', 'string', 'max:255'],
+        'description' => [$isUpdate ? 'sometimes' : 'required', 'string'],
+        'start_date'  => [$isUpdate ? 'sometimes' : 'required', 'date'],
+        'end_date'    => [$isUpdate ? 'sometimes' : 'required', 'date', 'after:start_date'],
+        'status'      => [$isUpdate ? 'sometimes' : 'required', 'in:Activa,Cerrada,Cancelada'],
+        'group_id'    => [$isUpdate ? 'sometimes' : 'required', 'integer', 'exists:groups,id'],
+        'unit_id'     => [$isUpdate ? 'sometimes' : 'required', 'integer', 'exists:units,id'],
+        'files'       => ['nullable', 'array'],
+        'files.*'     => ['file', 'max:10240'],
+    ];
+}
  
     public function messages(): array
     {
