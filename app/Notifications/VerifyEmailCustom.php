@@ -12,9 +12,9 @@ class VerifyEmailCustom extends VerifyEmail
     protected function buildMailMessage($url)
     {
         return (new MailMessage)
-            ->subject('Confirma tu cuenta en Estética Nova')
+            ->subject('Confirma tu cuenta en ClassSmart')
             ->greeting('Hola!')
-            ->line('Gracias por registrarte en Estética Nova.')
+            ->line('Gracias por registrarte en ClassSmart.')
             ->line('Para comenzar, necesitas confirmar tu correo electrónico.')
             ->action('Confirmar mi cuenta', $url)
             ->line('Si tú no creaste esta cuenta, ignora este correo.');
