@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
  
 class AuthController extends Controller
@@ -52,7 +53,15 @@ class AuthController extends Controller
             'role_id'   => 3, // Student por defecto
         ]);
 
-        $user->sendEmailVerificationNotification();
+        try {
+            $user->sendEmailVerificationNotification();
+        } catch (\Throwable $e) {
+            Log::warning('No se pudo enviar correo de verificacion tras registro', [
+                'user_id' => $user->id,
+                'email'   => $user->email,
+                'error'   => $e->getMessage(),
+            ]);
+        }
  
         return $this->successResponse(
             new UserResource($user),

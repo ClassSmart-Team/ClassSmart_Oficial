@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
+use App\Notifications\VerifyEmailCustom;
+use Illuminate\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmailContract
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, MustVerifyEmail;
 
     protected $fillable = [
         'name',
@@ -127,5 +130,11 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Chat::class, 'chat_user')
                     ->withTimestamps();
+    }
+
+    // Envia el correo de verificacion usando la plantilla personalizada.
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmailCustom());
     }
 }
