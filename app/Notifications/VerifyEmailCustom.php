@@ -26,7 +26,7 @@ class VerifyEmailCustom extends Notification
             // 👇 IMAGEN AQUÍ
             ->line(new HtmlString(
                 '<div style="text-align:center; margin-bottom:20px;">
-                    <img src="https://api.sutando-user.me/images/logo-mail.png" width="90" />
+                    <img src="https://api.sutando-user.me/images/LogoClassSmart.jpg" width="90" />
                 </div>'
             ))
 
