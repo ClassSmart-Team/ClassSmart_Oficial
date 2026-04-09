@@ -52,7 +52,7 @@ class AuthController extends Controller
             'role_id'   => 3, // Student por defecto
         ]);
 
-        $user->sendEmailVerificationNotification();
+
  
         return $this->successResponse(
             new UserResource($user),
