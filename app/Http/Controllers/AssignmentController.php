@@ -236,11 +236,14 @@ class AssignmentController extends Controller
     public function destroy($id)
     {
         $assignment = $this->findAccessibleAssignment($id);
- 
+
         if (!$assignment) {
-            return $this->errorResponse('Tarea no encontrada o sin permisos para eliminarla', 404);
+            return $this->errorResponse('Tarea no encontrada o sin permisos para cancelarla', 404);
         }
-        $assignment->delete();
-        return $this->successResponse(null, 'Tarea eliminada exitosamente', 200);
+
+        $assignment->status = 'Cancelada';
+        $assignment->save();
+
+        return $this->successResponse(null, 'Tarea cancelada exitosamente', 200);
     }
 }
