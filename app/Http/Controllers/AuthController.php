@@ -48,7 +48,7 @@ class AuthController extends Controller
             'lastname'  => $data['lastname'],
             'email'     => $data['email'],
             'password'  => Hash::make($data['password']),
-            'cellphone' => $data['cellphone'],
+            'cellphone' => $data['cellphone'] ?? null,
             'role_id'   => 3, // Student por defecto
         ]);
 

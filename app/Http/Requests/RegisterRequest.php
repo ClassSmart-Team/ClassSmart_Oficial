@@ -20,7 +20,7 @@ class RegisterRequest extends FormRequest
             'lastname'  => ['required', 'string', 'max:255'],
             'email'     => ['required', 'email', 'max:255', 'unique:users,email'],
             'password'  => ['required', 'string', 'min:6'],
-            'cellphone' => ['required', 'string', 'max:20'],
+            'cellphone' => ['nullable', 'string', 'max:20'],
             // role_id NO viene del frontend — se asigna como Student (3) en el controller
         ];
     }
@@ -35,7 +35,8 @@ class RegisterRequest extends FormRequest
             'email.unique'       => 'El correo electrónico ya está registrado.',
             'password.required'  => 'El campo contraseña es obligatorio.',
             'password.min'       => 'La contraseña debe tener al menos 6 caracteres.',
-            'cellphone.required' => 'El campo teléfono celular es obligatorio.',
+            'cellphone.string'   => 'El campo teléfono celular debe ser una cadena de texto.',
+            'cellphone.max'      => 'El campo teléfono celular no puede exceder los 20 caracteres.',
         ];
     }
 }
