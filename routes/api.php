@@ -84,11 +84,12 @@ Route::middleware('auth:sanctum')->group(function () {
         // Archivos
         Route::apiResource('files', FileController::class);
         Route::apiResource('group-files', GroupFileController::class);
-
-        Route::get("/files/{id}/view", function ($id) {
+        
+        
+        Route::get("/files/{id}/view", function ($id){
             $file = \App\Models\File::findOrFail($id);
-            return response()->file(storage_path('app/public' . $file->file_path));
-        });")
+            return response()->file(storage_path("app/public" . $file->file_path));
+        });
 
         // Chats y mensajes - padres excluidos
         Route::apiResource('chats', ChatController::class);
