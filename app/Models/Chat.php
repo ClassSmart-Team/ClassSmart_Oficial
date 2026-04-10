@@ -30,6 +30,10 @@ class Chat extends Model
     // ¿Es un chat 1 a 1?
     public function isPrivate()
     {
+        if ($this->relationLoaded('users')) {
+            return $this->users->count() === 2 && $this->name === null;
+        }
+
         return $this->users()->count() === 2 && $this->name === null;
     }
 }

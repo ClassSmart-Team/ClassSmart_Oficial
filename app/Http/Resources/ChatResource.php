@@ -14,6 +14,8 @@ class ChatResource extends JsonResource
         return [
             'id'   => $this->id,
             'name' => $this->name,
+            //Es privado o grupal
+            'is_private'     => $this->isPrivate(),
  
             // Participantes del chat
             'users'    => UserResource::collection($this->whenLoaded('users')),

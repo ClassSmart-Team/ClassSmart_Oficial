@@ -13,8 +13,12 @@ class ChatController extends Controller
  
     public function index(Request $request)
     {
-        // Solo devuelve los chats en los que participa el usuario autenticado
-        $chats = $request->user()->chats()->with('users')->withCount('messages')->get();
+        $chats = $request->user()
+            ->chats()
+            ->with('users')
+            ->withCount(['users', 'messages'])
+            ->get();
+
         return $this->successResponse(
             ChatResource::collection($chats),
             'Chats obtenidos exitosamente',
@@ -25,19 +29,60 @@ class ChatController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'     => ['nullable', 'string', 'max:255'],
-            'user_ids' => ['required', 'array', 'min:1'],
+            'name'       => ['nullable', 'string', 'max:255'],
+            'user_ids'   => ['required', 'array', 'min:1'],
             'user_ids.*' => ['integer', 'exists:users,id'],
         ]);
-        $chat = Chat::create(['name' => $request->name]);
-        // Agregar al usuario autenticado + los usuarios seleccionados
-        $userIds = array_unique(array_merge(
-            [$request->user()->id],
+
+        $authUser = $request->user();
+
+        $userIds = array_values(array_unique(array_merge(
+            [$authUser->id],
             $request->user_ids
-        ));
+        )));
+
+        if (count($userIds) < 2) {
+            return $this->errorResponse(
+                'Debes seleccionar al menos otro usuario para crear un chat',
+                422
+            );
+        }
+
+        $chatName = $request->filled('name') ? trim($request->name) : null;
+        $isPrivate = $chatName === null && count($userIds) === 2;
+
+        if ($isPrivate) {
+            $existingChat = Chat::with('users')
+                ->withCount(['users', 'messages'])
+                ->whereNull('name')
+                ->whereHas('users', function ($query) use ($userIds) {
+                    $query->whereIn('users.id', $userIds);
+                }, '=', 2)
+                ->get()
+                ->first(function ($chat) use ($userIds) {
+                    $chatUserIds = $chat->users->pluck('id')->sort()->values()->toArray();
+                    $incomingUserIds = collect($userIds)->sort()->values()->toArray();
+
+                    return $chatUserIds === $incomingUserIds;
+                });
+
+            if ($existingChat) {
+                return $this->successResponse(
+                    new ChatResource($existingChat),
+                    'El chat privado ya existía',
+                    200
+                );
+            }
+        }
+
+        $chat = Chat::create([
+            'name' => $chatName,
+        ]);
+
         $chat->users()->attach($userIds);
         $chat->load('users');
- 
+        $chat->loadCount(['users', 'messages']);
+
         return $this->successResponse(
             new ChatResource($chat),
             'Chat creado exitosamente',
@@ -45,14 +90,20 @@ class ChatController extends Controller
         );
     }
  
-    public function show($id)
+    public function show($id, Request $request)
     {
-        $chat = Chat::with(['users', 'messages.user'])->find($id);
- 
+        $chat = Chat::with(['users', 'messages.user'])
+            ->withCount(['users', 'messages'])
+            ->where('id', $id)
+            ->whereHas('users', function ($query) use ($request) {
+                $query->where('users.id', $request->user()->id);
+            })
+            ->first();
+
         if (!$chat) {
-            return $this->errorResponse('Chat no encontrado', 404);
+            return $this->errorResponse('Chat no encontrado o sin acceso', 404);
         }
- 
+
         return $this->successResponse(
             new ChatResource($chat),
             'Chat obtenido exitosamente',
@@ -60,16 +111,47 @@ class ChatController extends Controller
         );
     }
  
-    public function destroy($id)
+    public function destroy($id, Request $request)
     {
-        $chat = Chat::find($id);
- 
+        $user = $request->user();
+
+        $chat = Chat::with('users')
+            ->where('id', $id)
+            ->whereHas('users', function ($query) use ($user) {
+                $query->where('users.id', $user->id);
+            })
+            ->first();
+
         if (!$chat) {
-            return $this->errorResponse('Chat no encontrado', 404);
+            return $this->errorResponse('Chat no encontrado o sin acceso', 404);
         }
- 
-        $chat->delete();
- 
-        return $this->successResponse(null, 'Chat eliminado exitosamente', 200);
+
+        if ($chat->isPrivate()) {
+            $chat->delete();
+
+            return $this->successResponse(
+                null,
+                'Chat privado eliminado exitosamente',
+                200
+            );
+        }
+
+        $chat->users()->detach($user->id);
+
+        if (!$chat->users()->exists()) {
+            $chat->delete();
+
+            return $this->successResponse(
+                null,
+                'Saliste del chat y como ya no quedaban participantes, el chat fue eliminado',
+                200
+            );
+        }
+
+        return $this->successResponse(
+            null,
+            'Saliste del chat exitosamente',
+            200
+        );
     }
 }

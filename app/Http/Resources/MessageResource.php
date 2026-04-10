@@ -13,15 +13,13 @@ class MessageResource extends JsonResource
     {
         return [
             'id'      => $this->id,
+            'chat_id' => $this->chat_id,
             'content' => $this->content,
- 
-            // En lugar de IDs crudos, devolvemos los objetos completos
+
             'user' => new UserResource($this->whenLoaded('user')),
-            'chat' => new ChatResource($this->whenLoaded('chat')),
- 
+
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }
- 
