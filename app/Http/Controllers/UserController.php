@@ -35,7 +35,8 @@ class UserController extends Controller
         if ($user->role_id === 4 && $request->student_id) {
             $user->children()->attach($request->student_id);
         }
- 
+
+        $user->sendEmailVerificationNotification();
         return $this->successResponse(new UserResource($user), 'Usuario creado exitosamente', 201);
     }
  
