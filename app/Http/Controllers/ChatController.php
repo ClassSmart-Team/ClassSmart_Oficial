@@ -10,7 +10,24 @@ use Illuminate\Http\Request;
 class ChatController extends Controller
 {
     use ApiResponse;
- 
+
+    public function availableUsers(Request $request)
+    {
+        $users = \App\Models\User::query()
+            ->where('id', '!=', $request->user()->id)
+            ->whereIn('role_id', [2, 3])
+            ->where('active', true)
+            ->select('id', 'name', 'lastname', 'email')
+            ->orderBy('name')
+            ->orderBy('lastname')
+            ->get();
+
+        return $this->successResponse(
+            $users,
+            'Usuarios disponibles para chat obtenidos exitosamente',
+            200
+        );
+    }
     public function index(Request $request)
     {
         $chats = $request->user()
