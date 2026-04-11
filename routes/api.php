@@ -86,8 +86,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('group-files', GroupFileController::class);
         
         // Chats y mensajes - padres excluidos
-        Route::apiResource('chats', ChatController::class);
         Route::get('chat-users', [ChatController::class, 'availableUsers']);
+        Route::apiResource('chats', ChatController::class);
         Route::apiResource('messages', MessageController::class);
     });
 
