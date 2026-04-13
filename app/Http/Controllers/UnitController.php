@@ -1,7 +1,7 @@
 <?php
- 
+
 namespace App\Http\Controllers;
- 
+
 use App\Http\Requests\UnitRequest;
 use App\Http\Resources\UnitResource;
 use App\Models\Group;
@@ -55,7 +55,7 @@ class UnitController extends Controller
             200
         );
     }
- 
+
     public function store(UnitRequest $request)
     {
         $data = $request->validated();
@@ -84,7 +84,7 @@ class UnitController extends Controller
             201
         );
     }
- 
+
     public function show($id)
     {
         $unit = $this->findAccessibleUnit($id);
@@ -102,7 +102,7 @@ class UnitController extends Controller
             200
         );
     }
- 
+
     public function update(UnitRequest $request, $id)
     {
         $unit = $this->findAccessibleUnit($id);
@@ -133,7 +133,7 @@ class UnitController extends Controller
             200
         );
     }
- 
+
     public function destroy($id)
     {
         $unit = $this->findAccessibleUnit($id);

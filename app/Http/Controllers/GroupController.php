@@ -208,7 +208,7 @@ class GroupController extends Controller
         // 1. Verificamos que el grupo exista primero
         $group = Group::find($id);
         if (!$group) {
-            return $this->errorResponse('Grupo no encontrado', 404);
+            return $this->errorResponse('Grupo no encontrado o sin permisos para eliminarlo', 404);
         }
 
         // 2. Consultamos los alumnos disponibles
@@ -253,5 +253,161 @@ class GroupController extends Controller
 
         $group->students()->detach($request->student_id);
         return $this->successResponse(null, 'Alumno removido del grupo exitosamente', 200);
+    }
+
+    /* PARENT */
+    public function getParentGroups()
+    {
+        $user = auth('sanctum')->user();
+
+        if ($user->role_id !== 4) {
+            return $this->errorResponse('Acceso denegado.', 403);
+        }
+
+        $children = $user->children()->with([
+            'groups.ownerUser',
+            'groups.period'
+        ])->get();
+
+        $data = [];
+
+        foreach ($children as $child) {
+            $childData = [
+                'childId'   => $child->id,
+                'childName' => $child->name . ' ' . $child->lastname,
+                'groups'    => []
+            ];
+
+            foreach ($child->groups as $group) {
+                $childData['groups'][] = [
+                    'id'                => $group->id,
+                    'name'              => $group->name,
+                    'description'       => $group->description,
+                    'active'            => (bool)$group->active,
+                    'owner' => [
+                        'name'     => $group->ownerUser->name ?? 'Sin',
+                        'lastname' => $group->ownerUser->lastname ?? 'Asignar',
+                    ],
+                    'period' => [
+                        'name' => $group->period->name ?? 'N/A',
+                        'year' => $group->period->year ?? 2026,
+                    ],
+                    'completed_tasks'   => $group->completed_tasks ?? 0,
+                    'pending_tasks'     => $group->pending_tasks ?? 0,
+                ];
+            }
+
+            $data[] = $childData;
+        }
+
+        return $this->successResponse($data, 'Grupos de los hijos obtenidos');
+    }
+
+    public function getParentGroupDetail(Request $request, $groupId)
+    {
+        $user = auth('sanctum')->user();
+        $childId = $request->query('child_id');
+
+        if (!$childId) {
+            return $this->errorResponse('ID del hijo requerido', 400);
+        }
+
+        $exists = $user->children()
+            ->where('users.id', $childId)
+            ->whereHas('groups', function($q) use ($groupId) {
+                $q->where('groups.id', $groupId);
+            })->exists();
+
+        if (!$exists) {
+            return $this->errorResponse('No tienes permiso para ver este grupo.', 403);
+        }
+
+        $group = Group::with(['ownerUser', 'period', 'assignments.unit', 'announcements'])
+            ->find($groupId);
+
+        $units = [];
+        foreach ($group->units as $unit) {
+            $units[] = [
+                'id'   => $unit->id,
+                'name' => $unit->name,
+            ];
+        }
+
+        $activities = [];
+        foreach ($group->assignments as $task) {
+            $submission = Submission::where('assignment_id', $task->id)
+                ->where('student_id', $childId)
+                ->first();
+
+            $status = 'Pendiente';
+
+            if ($task->status === 'Cerrada' && !$submission) {
+                $status = 'Atrasado';
+            }
+            elseif ($submission) {
+                $isLate = $task->end_date && $submission->submission_date > $task->end_date;
+                if ($submission->grade !== null) {
+                    $status = 'Calificado';
+                } else {
+                    $status = $isLate ? 'Tardia' : 'Entregado';
+                }
+            }
+            elseif ($task->end_date && now() > $task->end_date) {
+                $status = 'Atrasado';
+            }
+
+            $activities[] = [
+                'id'      => $task->id,
+                'childId' => $childId,
+                'title'   => $task->title,
+                'subject' => $group->name,
+                'dueDate' => $task->end_date ? $task->end_date->format('d M') : 'S/F',
+                'status'  => $status,
+
+                'unit_id'   => $task->unit_id ?? 0,
+                'unit_name' => $task->unit ? $task->unit->name : 'Sin Unidad',
+
+                'submission' => $submission ? [
+                    'status' => $submission->status,
+                    'grade'  => $submission->grade,
+                ] : null,
+            ];
+        }
+
+        $teacherName = $group->ownerUser
+            ? ($group->ownerUser->name . ' ' . $group->ownerUser->lastname)
+            : 'Profesor';
+
+        $forumPosts = [];
+        foreach ($group->announcements as $post) {
+            $forumPosts[] = [
+                'id'               => $post->id,
+                'title'            => $post->title,
+                'message'          => $post->message,
+                'created_at'       => $post->created_at,
+                'group' => [
+                    'owner' => [
+                        'name'     => $group->ownerUser->name,
+                        'lastname' => $group->ownerUser->lastname,
+                    ]
+                ],
+                'attachment_path'  => $post->attachment_path,
+                'attachment_name'  => $post->attachment_name,
+            ];
+        }
+
+        $data = [
+            'group' => [
+                'id'          => $group->id,
+                'name'        => $group->name,
+                'description' => $group->description,
+                'teacher'     => $teacherName,
+            ],
+            'units'       => $units,
+            'activities'  => $activities,
+            'forum_posts' => $forumPosts
+        ];
+
+        return $this->successResponse($data, 'Detalle del grupo obtenido');
     }
 }

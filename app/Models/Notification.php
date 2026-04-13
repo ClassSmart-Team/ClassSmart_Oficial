@@ -34,12 +34,24 @@ class Notification extends Model
         return $this->belongsTo(Assignment::class, 'related_assignment');
     }
 
+    // Anuncio relacionado a notificacion
+    public function announcement()
+    {
+        return $this->belongsTo(Announcement::class, 'related_announcement');
+    }
+
+    // Boleta relacionado a notificacion
+    public function grade_records()
+    {
+        return $this->belongsTo(GradeRecord::class, 'related_grade_record');
+    }
+
     // Todos los destinatarios con su estado de lectura individual
     public function recipients()
     {
         return $this->belongsToMany(User::class, 'notification_user')
-                    ->withPivot('read_at')
-                    ->withTimestamps();
+            ->withPivot('read_at')
+            ->withTimestamps();
     }
 
     // -------------------------------------------------------

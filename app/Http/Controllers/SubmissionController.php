@@ -1,7 +1,7 @@
 <?php
- 
+
 namespace App\Http\Controllers;
- 
+
 use App\Http\Requests\SubmissionRequest;
 use App\Http\Resources\AssignmentResource;
 use App\Http\Resources\SubmissionResource;
@@ -9,6 +9,10 @@ use App\Models\Assignment;
 use App\Models\File;
 use App\Models\Notification;
 use App\Models\Submission;
+use App\Models\User;
+use App\Notifications\AssignmentFeedbackNotification;
+use App\Notifications\AssignmentGradedNotification;
+use App\Notifications\SubmissionNotification;
 use App\Traits\ApiResponse;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -172,7 +176,7 @@ class SubmissionController extends Controller
  
     public function store(SubmissionRequest $request)
     {
-        $assignment = Assignment::with('group')->find($request->assignment_id);
+        $assignment = Assignment::with('group.ownerUser')->find($request->assignment_id);
         if (!$assignment) {
             return $this->errorResponse('Tarea no encontrada', 404);
         }
@@ -237,6 +241,19 @@ class SubmissionController extends Controller
             $assignment->group->getAttribute('owner'),
             ['read_at' => null]
         );
+
+        //NOTIFICACIONES EMAIL Y PUSH
+        $teacher = User::find($assignment->group->owner);
+        if ($teacher) {
+            $teacher->notify(new SubmissionNotification($assignment, $student, $submission));
+        }
+
+        foreach ($student->parents as $parent) {
+            if ($parent->fcm_token) {
+                $parent->notify(new SubmissionNotification($assignment, $student, $submission));
+            }
+        }
+
         $submission->load(['student', 'assignment', 'files']);
         return $this->successResponse(
             new SubmissionResource($submission),
@@ -244,7 +261,7 @@ class SubmissionController extends Controller
             201
         );
     }
- 
+
     public function show($id)
     {
         $submission = $this->findAccessibleSubmission($id);
@@ -260,13 +277,13 @@ class SubmissionController extends Controller
             200
         );
     }
- 
+
     // Calificar una entrega — solo maestros
     public function grade(Request $request, $id)
     {
         $request->validate([
             'grade'    => ['required', 'numeric', 'min:0', 'max:10'],
-            'feedback' => ['nullable', 'string'],
+            'feedback' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $submission = $this->visibleSubmissionsQuery($request->user())
@@ -282,8 +299,12 @@ class SubmissionController extends Controller
             'feedback' => $request->feedback,
             'status'   => 'Calificada',
         ]);
-        // Notificar al alumno que fue calificado
+
         $student = $submission->student;
+        $assignment = $submission->assignment;
+        $submission->load(['student', 'assignment', 'files']);
+
+        // Notificar al alumno que fue calificada
         $notification = Notification::create([
             'created_by'         => $request->user()->id,
             'title'              => 'Entrega calificada',
@@ -300,14 +321,28 @@ class SubmissionController extends Controller
             'type'               => 'Individual',
             'related_assignment' => $submission->assignment_id,
         ]);
-        $submission->load(['student', 'assignment', 'files']);
+
+        if ($request->filled('feedback')) {
+            $notificationClass = new AssignmentFeedbackNotification($assignment, $student, $request->feedback);
+        } else {
+            $notificationClass = new AssignmentGradedNotification($assignment, $student, $request->grade);
+        }
+
+        $student->notify($notificationClass);
+
+        foreach ($student->parents as $parent) {
+            if ($parent->fcm_token) {
+                $parent->notify($notificationClass);
+            }
+        }
+
         return $this->successResponse(
             new SubmissionResource($submission),
             'Entrega calificada exitosamente',
             200
         );
     }
- 
+
     public function destroy($id)
     {
         $submission = $this->findAccessibleSubmission($id);

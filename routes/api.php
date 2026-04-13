@@ -34,7 +34,6 @@ Route::post('/register', [AuthController::class, 'register']);
 
 // Rutas protegidas (piden token))
 Route::middleware('auth:sanctum')->group(function () {
-
     // Auth (cualquier usuario autentificado)
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
@@ -47,14 +46,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::get('notifications/{id}', [NotificationController::class, 'show']);
     Route::patch('notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
+    Route::patch('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 
     // Calificaciones — ver: todos los roles (padre ve las de sus hijos)
     Route::get('grade-records', [GradeRecordController::class, 'index']);
     Route::get('grade-records/{id}', [GradeRecordController::class, 'show']);
 
+    Route::get('files/{id}/download', [FileController::class, 'download']);
+    Route::get('files/{id}/view', [FileController::class, 'view']);
+
+    // Ruta para guardar el token de Firebase
+    Route::post('/save-token', [UserController::class, 'updateFcmToken']);
+
     // Admin (Rol 1)
     Route::middleware('role:1')->group(function () {
-        Route::get('audits', [AuditController::class, 'index']);
         Route::get("users", [UserController::class, 'index']);
         Route::post("users", [UserController::class, 'store']);
         Route::get("users/{id}", [UserController::class, 'show']);
@@ -134,6 +139,30 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('my-submissions/{id}', [SubmissionController::class, 'mySubmissionShow']);
         Route::get('my-assignment-submissions/{assignment}', [SubmissionController::class, 'myAssignmentSubmissions']);
         Route::post('submissions', [SubmissionController::class, 'store']);
+    });
+
+
+    Route::middleware('role:4')->group(function () {
+        //Ver y actualizar perfil
+        Route::get('profile', [UserController::class, 'getProfile']);
+        Route::put('profile', [UserController::class, 'updateProfile']);
+        Route::get('/my-children', [UserController::class, 'getMyChildren']);
+
+        //Ver grupos desde usuario padre
+        Route::get('/groups', [GroupController::class, 'getParentGroups']);
+        Route::get('/parent-groups/{id}', [GroupController::class, 'getParentGroupDetail']);
+
+        //Ver assignments desde usuario padre
+        Route::get('/assignments', [AssignmentController::class, 'getParentAssignments']);
+        Route::get('/parent-assignments/{id}', [AssignmentController::class, 'getParentAssignmentDetail']);
+
+        //Ver horarios desde usuario padre
+        Route::get('/children/{child}/schedule', [ScheduleController::class, 'getChildSchedule']);
+
+        //Ver anuncios desde usuario padre
+        Route::get('/announcements', [AnnouncementController::class, 'getParentAnnouncements']);
+        Route::get('/announcements/{id}', [AnnouncementController::class, 'getParentAnnouncementDetail']);
+
     });
 
 });
