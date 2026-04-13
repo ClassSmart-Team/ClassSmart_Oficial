@@ -1,9 +1,9 @@
 <?php
- 
+
 namespace App\Http\Requests;
- 
+
 use Illuminate\Foundation\Http\FormRequest;
- 
+
 class RegisterRequest extends FormRequest
 {
     public function authorize(): bool
@@ -12,7 +12,7 @@ class RegisterRequest extends FormRequest
         // El role_id se asigna automáticamente como Student en el controller
         return true;
     }
- 
+
     public function rules(): array
     {
         return [
@@ -21,10 +21,11 @@ class RegisterRequest extends FormRequest
             'email'     => ['required', 'email', 'max:255', 'unique:users,email'],
             'password'  => ['required', 'string', 'min:6'],
             'cellphone' => ['required', 'string', 'max:20'],
+            'role_id'   => ['required', 'integer', 'exists:roles,id'],
             // role_id NO viene del frontend — se asigna como Student (3) en el controller
         ];
     }
- 
+
     public function messages(): array
     {
         return [

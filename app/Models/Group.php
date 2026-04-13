@@ -44,7 +44,7 @@ class Group extends Model
     // Unidades del grupo
     public function units()
     {
-        return $this->hasMany(Unit::class)->orderBy('order');
+        return $this->hasMany(Unit::class);
     }
 
     // Tareas del grupo

@@ -16,6 +16,7 @@ class User extends Authenticatable
         'lastname',
         'email',
         'password',
+        'fcm_token',
         'cellphone',
         'active',
         'role_id',
@@ -127,5 +128,13 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Chat::class, 'chat_user')
                     ->withTimestamps();
+    }
+
+    /**
+     * Relación con la configuración de notificaciones del usuario.
+     */
+    public function configuration()
+    {
+        return $this->hasOne(Configuration::class);
     }
 }

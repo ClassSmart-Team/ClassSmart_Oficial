@@ -1,16 +1,16 @@
 <?php
- 
+
 namespace App\Http\Controllers;
- 
+
 use App\Http\Requests\ScheduleRequest;
 use App\Http\Resources\ScheduleResource;
 use App\Models\Schedule;
 use App\Traits\ApiResponse;
- 
+
 class ScheduleController extends Controller
 {
     use ApiResponse;
- 
+
     public function index()
     {
         $schedules = Schedule::with('group')->get();
@@ -20,7 +20,7 @@ class ScheduleController extends Controller
             200
         );
     }
- 
+
     public function store(ScheduleRequest $request)
     {
         $schedule = Schedule::create($request->validated());
@@ -31,11 +31,11 @@ class ScheduleController extends Controller
             201
         );
     }
- 
+
     public function show($id)
     {
         $schedule = Schedule::with('group')->find($id);
- 
+
         if (!$schedule) {
             return $this->errorResponse('Horario no encontrado', 404);
         }
@@ -45,11 +45,11 @@ class ScheduleController extends Controller
             200
         );
     }
- 
+
     public function update(ScheduleRequest $request, $id)
     {
         $schedule = Schedule::find($id);
- 
+
         if (!$schedule) {
             return $this->errorResponse('Horario no encontrado', 404);
         }
@@ -61,7 +61,7 @@ class ScheduleController extends Controller
             200
         );
     }
- 
+
     public function destroy($id)
     {
         $schedule = Schedule::find($id);
@@ -70,5 +70,35 @@ class ScheduleController extends Controller
         }
         $schedule->delete();
         return $this->successResponse(null, 'Horario eliminado exitosamente', 200);
+    }
+
+    /* PARENT */
+    public function getChildSchedule($childId)
+    {
+        $parent = auth()->user();
+
+        // Validar que el estudiante esté vinculado a este padre
+        $child = $parent->children()->where('users.id', $childId)->first();
+
+        if (!$child) {
+            return $this->errorResponse('Hijo no encontrado o no vinculado', 404);
+        }
+
+        $child->load(['groups.schedules', 'groups.ownerUser']);
+
+        $fullSchedule = [];
+        foreach ($child->groups as $group) {
+            foreach ($group->schedules as $schedule) {
+                $fullSchedule[] = [
+                    'day'          => $schedule->day,
+                    'start_time'   => $schedule->start_time,
+                    'end_time'     => $schedule->end_time,
+                    'subject_name' => $group->name,
+                    'teacher_name' => $group->ownerUser->name . ' ' . $group->ownerUser->lastname,
+                ];
+            }
+        }
+
+        return $this->successResponse($fullSchedule, 'Horario obtenido exitosamente');
     }
 }

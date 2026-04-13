@@ -26,13 +26,14 @@ use App\Http\Controllers\UnitController;
 4 = Parent
 */
 
+
+
 // Rutas públicas (sin token)
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
 // Rutas protegidas (piden token))
 Route::middleware('auth:sanctum')->group(function () {
-
     // Auth (cualquier usuario autentificado)
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
@@ -45,23 +46,62 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::get('notifications/{id}', [NotificationController::class, 'show']);
     Route::patch('notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
+    Route::patch('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 
     // Calificaciones — ver: todos los roles (padre ve las de sus hijos)
     Route::get('grade-records', [GradeRecordController::class, 'index']);
     Route::get('grade-records/{id}', [GradeRecordController::class, 'show']);
 
+    Route::get('files/{id}/download', [FileController::class, 'download']);
+    Route::get('files/{id}/view', [FileController::class, 'view']);
+
+    // Ruta para guardar el token de Firebase
+    Route::post('/save-token', [UserController::class, 'updateFcmToken']);
+
     // Admin (Rol 1)
     Route::middleware('role:1')->group(function () {
-        Route::apiResource('users', UserController::class);
+        Route::get("users", [UserController::class, 'index']);
+        Route::post("users", [UserController::class, 'store']);
+        Route::get("users/{id}", [UserController::class, 'show']);
+        Route::put("users/{id}", [UserController::class, 'update']);
+        Route::delete("users/{id}", [UserController::class, 'destroy']);
         Route::apiResource('roles', RoleController::class);
-        Route::apiResource('periods', PeriodController::class);
-        Route::apiResource('schedules', ScheduleController::class);
+        Route::post("periods", [PeriodController::class, 'store']);
+        Route::get("periods/{id}", [PeriodController::class, 'show']);
+        Route::put("periods/{id}", [PeriodController::class, 'update']);
+        Route::delete("periods/{id}", [PeriodController::class, 'destroy']);
+        Route::get("schedules", [ScheduleController::class, 'index']);
+        Route::post("schedules", [ScheduleController::class, 'store']);
+        Route::get("schedules/{id}", [ScheduleController::class, 'show']);
+        Route::put("schedules/{id}", [ScheduleController::class, 'update']);
+        Route::delete("schedules/{id}", [ScheduleController::class, 'destroy']);
     });
 
+    Route::middleware('role:1,2,3')->group(function () {
+
+        // Ver y eliminar entregas
+        Route::get('submissions', [SubmissionController::class, 'index']);
+        Route::get('submissions/{id}', [SubmissionController::class, 'show']);
+        Route::delete('submissions/{id}', [SubmissionController::class, 'destroy']);
+
+        // Archivos
+        Route::apiResource('files', FileController::class);
+        Route::apiResource('group-files', GroupFileController::class);
+
+        // Chats y mensajes - padres excluidos
+        Route::apiResource('chats', ChatController::class);
+        Route::apiResource('messages', MessageController::class);
+    });
 
     // Admin y Maestro (roles 1 y 2)
     Route::middleware('role:1,2')->group(function () {
-        Route::apiResource('groups', GroupController::class);
+        // Grupos - consulta
+        Route::get('groups/available-students/{id}', [GroupController::class, 'getAvailableStudents']);
+        Route::get('groups', [GroupController::class, 'index']);
+        Route::get('groups/{id}', [GroupController::class, 'show']);
+        Route::post('groups', [GroupController::class, 'store']);
+        Route::put('groups/{id}', [GroupController::class, 'update']);
+        Route::delete('groups/{id}', [GroupController::class, 'destroy']);
         Route::post('groups/{group}/students', [GroupController::class, 'addStudent']);
         Route::delete('groups/{group}/students', [GroupController::class, 'removeStudent']);
 
@@ -80,28 +120,46 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Calificar entregas
         Route::patch('submissions/{submission}/grade', [SubmissionController::class, 'grade']);
+
+        //Horarios
+        Route::get("periods", [PeriodController::class, 'index']);
     });
 
 
     // Solo Alumno (role 3)
     Route::middleware('role:3')->group(function () {
+        Route::get('my-groups', [GroupController::class, 'myGroups']);
+        Route::get('my-groups/{id}', [GroupController::class, 'myGroupShow']);
+        Route::get('my-assignments', [AssignmentController::class, 'myAssignments']);
+        Route::get('my-assignments/{id}', [AssignmentController::class, 'myAssignmentShow']);
+        Route::get('my-submissions', [SubmissionController::class, 'mySubmissions']);
+        Route::get('my-submissions/{id}', [SubmissionController::class, 'mySubmissionShow']);
+        Route::get('my-assignment-submissions/{assignment}', [SubmissionController::class, 'myAssignmentSubmissions']);
         Route::post('submissions', [SubmissionController::class, 'store']);
     });
 
-    /* Admin, Maestro y Alumno (roles 1, 2 y 3) */
-    Route::middleware('role:1,2,3')->group(function () {
-        // Ver y eliminar entregas
-        Route::get('submissions', [SubmissionController::class, 'index']);
-        Route::get('submissions/{id}', [SubmissionController::class, 'show']);
-        Route::delete('submissions/{id}', [SubmissionController::class, 'destroy']);
 
-        // Archivos
-        Route::apiResource('files', FileController::class);
-        Route::apiResource('group-files', GroupFileController::class);
+    Route::middleware('role:4')->group(function () {
+        //Ver y actualizar perfil
+        Route::get('profile', [UserController::class, 'getProfile']);
+        Route::put('profile', [UserController::class, 'updateProfile']);
+        Route::get('/my-children', [UserController::class, 'getMyChildren']);
 
-        // Chats y mensajes — padres excluidos
-        Route::apiResource('chats', ChatController::class);
-        Route::apiResource('messages', MessageController::class);
+        //Ver grupos desde usuario padre
+        Route::get('/groups', [GroupController::class, 'getParentGroups']);
+        Route::get('/parent-groups/{id}', [GroupController::class, 'getParentGroupDetail']);
+
+        //Ver assignments desde usuario padre
+        Route::get('/assignments', [AssignmentController::class, 'getParentAssignments']);
+        Route::get('/parent-assignments/{id}', [AssignmentController::class, 'getParentAssignmentDetail']);
+
+        //Ver horarios desde usuario padre
+        Route::get('/children/{child}/schedule', [ScheduleController::class, 'getChildSchedule']);
+
+        //Ver anuncios desde usuario padre
+        Route::get('/announcements', [AnnouncementController::class, 'getParentAnnouncements']);
+        Route::get('/announcements/{id}', [AnnouncementController::class, 'getParentAnnouncementDetail']);
+
     });
 
 });

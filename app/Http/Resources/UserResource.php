@@ -18,6 +18,7 @@ class UserResource extends JsonResource
             'email'     => $this->email,
             'cellphone' => $this->cellphone,
             'active'    => $this->active,
+            'configuration' => $this->whenLoaded('configuration'),
 
             // En lugar de role_id crudo, devolvemos el objeto completo
             'role' => new RoleResource($this->whenLoaded('role')),
