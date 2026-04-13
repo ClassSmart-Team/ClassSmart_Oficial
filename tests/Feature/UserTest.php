@@ -14,7 +14,7 @@ beforeEach(function (){
 test("Good Credentials", function (){
     $response = $this->postJson("api/login",[
         "email" => "laura@gmail.com",
-        "password" => "chupenla"
+        "password" => "yaweyes"
     ]);
     $response->assertOk()->assertJsonIsObject();
 });
