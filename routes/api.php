@@ -48,6 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::get('notifications/{id}', [NotificationController::class, 'show']);
     Route::patch('notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
+    Route::patch('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 
     // Calificaciones — ver: todos los roles (padre ve las de sus hijos)
     Route::get('grade-records', [GradeRecordController::class, 'index']);
@@ -167,5 +168,5 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/announcements/{id}', [AnnouncementController::class, 'getParentAnnouncementDetail']);
 
     });
-    
+
 });
