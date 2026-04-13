@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('created_by')
-                  ->nullable()
-                  ->constrained('users')
-                  ->nullOnDelete(); // si se borra el usuario, la notif se queda pero sin remitente
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete(); // si se borra el usuario, la notif se queda pero sin remitente
             $table->string('title');
             $table->text('message');
             $table->enum('type', ['General', 'Individual']);

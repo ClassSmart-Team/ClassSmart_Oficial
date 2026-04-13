@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->text('fcm_token')->nullable();
             $table->string("cellphone")->nullable();
             $table->boolean("active")->default(true);
             $table->foreignId("role_id")->constrained("roles");

@@ -1,17 +1,17 @@
 <?php
- 
+
 namespace App\Http\Controllers;
- 
+
 use App\Http\Requests\ConfigurationRequest;
 use App\Http\Resources\ConfigurationResource;
 use App\Models\Configuration;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
- 
+
 class ConfigurationController extends Controller
 {
     use ApiResponse;
- 
+
     // Obtener configuración del usuario autenticado
     public function show(Request $request)
     {
@@ -25,7 +25,7 @@ class ConfigurationController extends Controller
             200
         );
     }
- 
+
     // Crear o actualizar configuración del usuario autenticado
     public function update(ConfigurationRequest $request)
     {
