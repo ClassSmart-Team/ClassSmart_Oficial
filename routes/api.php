@@ -28,7 +28,6 @@ use App\Http\Controllers\UnitController;
 */
 
 
-
 // Rutas públicas (sin token)
 Route::get('/test-mail', [AuthController::class, 'testMail']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -36,6 +35,7 @@ Route::post('/register', [AuthController::class, 'register']);
 
 // Rutas protegidas (piden token))
 Route::middleware('auth:sanctum')->group(function () {
+
     // Auth (cualquier usuario autentificado)
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
@@ -48,7 +48,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::get('notifications/{id}', [NotificationController::class, 'show']);
     Route::patch('notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
-    Route::patch('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 
     // Calificaciones — ver: todos los roles (padre ve las de sus hijos)
     Route::get('grade-records', [GradeRecordController::class, 'index']);
@@ -62,6 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Admin (Rol 1)
     Route::middleware('role:1')->group(function () {
+        Route::get('audits', [AuditController::class, 'index']);
         Route::get("users", [UserController::class, 'index']);
         Route::post("users", [UserController::class, 'store']);
         Route::get("users/{id}", [UserController::class, 'show']);
@@ -143,7 +143,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('submissions', [SubmissionController::class, 'store']);
     });
 
-
+    //Solo Padre (role 4)
+    
     Route::middleware('role:4')->group(function () {
         //Ver y actualizar perfil
         Route::get('profile', [UserController::class, 'getProfile']);
@@ -166,5 +167,5 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/announcements/{id}', [AnnouncementController::class, 'getParentAnnouncementDetail']);
 
     });
-
+    
 });
