@@ -89,6 +89,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('chat-users', [ChatController::class, 'availableUsers']);
         Route::apiResource('chats', ChatController::class);
         Route::apiResource('messages', MessageController::class);
+
+        // Anuncios - consulta
+        Route::get('announcements', [AnnouncementController::class, 'index']);
+        Route::get('announcements/{id}', [AnnouncementController::class, 'show']);
     });
 
     // Admin y Maestro (roles 1 y 2)
@@ -104,7 +108,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('groups/{group}/students', [GroupController::class, 'removeStudent']);
 
         Route::apiResource('units', UnitController::class);
-        Route::apiResource('announcements', AnnouncementController::class);
+        Route::post('announcements', [AnnouncementController::class, 'store']);
+        Route::put('announcements/{id}', [AnnouncementController::class, 'update']);
+        Route::patch('announcements/{id}', [AnnouncementController::class, 'update']);
+        Route::delete('announcements/{id}', [AnnouncementController::class, 'destroy']);
         Route::apiResource('assignments', AssignmentController::class);
 
         // Calificaciones — crear, editar, eliminar
