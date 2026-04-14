@@ -30,6 +30,14 @@ class AnnouncementController extends Controller
             });
         }
 
+        if($user && $user->isStudent()) {
+            return $query->whereHas('group.students', function ($studentsQuery) use ($user) {
+                $studentsQuery
+                    ->where('users.id', $user->id)
+                ->where('student_groups.active', true);
+            });
+        }
+
         return $query->whereRaw('1 = 0');
     }
 
