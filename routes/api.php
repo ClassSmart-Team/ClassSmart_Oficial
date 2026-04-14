@@ -92,11 +92,12 @@ Route::middleware('auth:sanctum')->group(function () {
         // Archivos
         Route::apiResource('files', FileController::class);
         Route::apiResource('group-files', GroupFileController::class);
-        
+
         // Chats y mensajes - padres excluidos
         Route::get('chat-users', [ChatController::class, 'availableUsers']);
         Route::apiResource('chats', ChatController::class);
         Route::apiResource('messages', MessageController::class);
+        Route::get("periods", [PeriodController::class, 'index']);
     });
 
     // Admin y Maestro (roles 1 y 2)
@@ -126,9 +127,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Calificar entregas
         Route::patch('submissions/{submission}/grade', [SubmissionController::class, 'grade']);
-
-        //Horarios
-        Route::get("periods", [PeriodController::class, 'index']);
     });
 
 
@@ -145,7 +143,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     //Solo Padre (role 4)
-    
+
     Route::middleware('role:4')->group(function () {
         //Ver y actualizar perfil
         Route::get('profile', [UserController::class, 'getProfile']);
@@ -153,19 +151,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/my-children', [UserController::class, 'getMyChildren']);
 
         //Ver grupos desde usuario padre
-        Route::get('/groups', [GroupController::class, 'getParentGroups']);
+        Route::get('/parent/groups', [GroupController::class, 'getParentGroups']);
         Route::get('/parent-groups/{id}', [GroupController::class, 'getParentGroupDetail']);
 
         //Ver assignments desde usuario padre
-        Route::get('/assignments', [AssignmentController::class, 'getParentAssignments']);
+        Route::get('/parent/assignments', [AssignmentController::class, 'getParentAssignments']);
         Route::get('/parent-assignments/{id}', [AssignmentController::class, 'getParentAssignmentDetail']);
 
         //Ver horarios desde usuario padre
         Route::get('/children/{child}/schedule', [ScheduleController::class, 'getChildSchedule']);
 
         //Ver anuncios desde usuario padre
-        Route::get('/announcements', [AnnouncementController::class, 'getParentAnnouncements']);
-        Route::get('/announcements/{id}', [AnnouncementController::class, 'getParentAnnouncementDetail']);
+        Route::get('/parent/announcements', [AnnouncementController::class, 'getParentAnnouncements']);
+        Route::get('/parent-announcements/{id}', [AnnouncementController::class, 'getParentAnnouncementDetail']);
 
     });
 

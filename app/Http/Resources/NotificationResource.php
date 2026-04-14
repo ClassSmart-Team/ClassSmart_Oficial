@@ -32,12 +32,6 @@ class NotificationResource extends JsonResource
 
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
-
-            'route_info' => [
-                // Construye el nombre de la ruta dinámicamente: 'student-assignments', etc.
-                'name'   => $this->getRouteNameByRole($roleName),
-                'params' => $this->getRouteParams()
-            ],
         ];
     }
 }
