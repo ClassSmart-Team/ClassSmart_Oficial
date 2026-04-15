@@ -7,7 +7,7 @@ use App\Models\Chat;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use App\Models\User;
-use App\Http\Resources\UserResource;
+use App\Http\Resources\UserResourceCollection;
  
 class ChatController extends Controller
 {
