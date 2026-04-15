@@ -7,7 +7,7 @@ use App\Models\Chat;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use App\Models\User;
-use App\Http\Resources\UserResourceCollection;
+use App\Http\Resources\UserResource;
  
 class ChatController extends Controller
 {
@@ -25,7 +25,7 @@ class ChatController extends Controller
             ->get();
 
         return $this->successResponse(
-            new UserResourceCollection($users),
+            UserResource::collection($users),
             'Usuarios disponibles para chat obtenidos exitosamente',
             200
         );
