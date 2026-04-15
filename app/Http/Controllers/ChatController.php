@@ -24,7 +24,7 @@ class ChatController extends Controller
             ->get();
 
         return $this->successResponse(
-            $users,
+            new UserResourceCollection($users),
             'Usuarios disponibles para chat obtenidos exitosamente',
             200
         );
