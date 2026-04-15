@@ -18,8 +18,7 @@ class ChatController extends Controller
         $users = User::query()
             ->where('id', '!=', $request->user()->id)
             ->whereIn('role_id', [2, 3])
-            ->where('active', true)->with("role")
-            ->select('id', 'name', 'lastname', 'email', 'role_id')
+            ->where('active', true)->with("role")->with("role")
             ->orderBy('name')
             ->orderBy('lastname')
             ->get();
