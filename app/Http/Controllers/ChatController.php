@@ -14,13 +14,13 @@ class ChatController extends Controller
 
     public function availableUsers(Request $request)
     {
-        $users = User::with('role')
+        $users = User::query()
             ->where('id', '!=', $request->user()->id)
             ->whereIn('role_id', [2, 3])
-            ->where('active', true)
+            ->where('active', true)->with("role")
             ->select('id', 'name', 'lastname', 'email')
             ->orderBy('name')
-            ->orderBy('lastname')->with("role")
+            ->orderBy('lastname')
             ->get();
 
         return $this->successResponse(
