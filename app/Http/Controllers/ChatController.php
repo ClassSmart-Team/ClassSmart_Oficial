@@ -14,7 +14,7 @@ class ChatController extends Controller
 
     public function availableUsers(Request $request)
     {
-        $users = User::query()
+        $users = User::with('role')
             ->where('id', '!=', $request->user()->id)
             ->whereIn('role_id', [2, 3])
             ->where('active', true)
