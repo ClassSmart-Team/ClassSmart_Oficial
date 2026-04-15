@@ -7,14 +7,13 @@ use App\Http\Resources\AssignmentResource;
 use App\Models\Assignment;
 use App\Models\File;
 use App\Models\Notification;
+use App\Models\Submission;
 use App\Notifications\AssignmentNotification;
-use App\Notifications\NewAssignmentNotification;
-use App\Notifications\NewAssignmentParentNotification;
 use App\Traits\ApiResponse;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
- 
+
 class AssignmentController extends Controller
 {
     use ApiResponse;
@@ -69,7 +68,7 @@ class AssignmentController extends Controller
 
         return $this->visibleAssignmentsQuery($user)->find($id);
     }
- 
+
     public function index(Request $request)
     {
         $assignments = $this->visibleAssignmentsQuery($request->user())
@@ -97,7 +96,7 @@ class AssignmentController extends Controller
                     ->where('users.id', $user->id)
                     ->where('student_groups.active', true);
             })
-            ->with(['group', 'unit'])
+            ->with(['group.ownerUser', 'unit'])
             ->withCount('submissions')
             ->get();
 
@@ -139,7 +138,7 @@ class AssignmentController extends Controller
             200
         );
     }
- 
+
     public function store(AssignmentRequest $request)
     {
         $data = $request->validated();
@@ -212,7 +211,7 @@ class AssignmentController extends Controller
 
         $assignment->loadCount('submissions')
         ->load(["submissions","submissions.student", "submissions.files", "group", "unit", "files"]);
- 
+
         return $this->successResponse(
             new AssignmentResource($assignment),
             'Tarea obtenida exitosamente',
@@ -223,7 +222,7 @@ class AssignmentController extends Controller
     public function update(AssignmentRequest $request, $id)
     {
         $assignment = $this->findAccessibleAssignment($id);
- 
+
         if (!$assignment) {
             return $this->errorResponse('Tarea no encontrada o sin permisos para editarla', 404);
         }
