@@ -19,6 +19,8 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\UnitController;
+use function Pest\Laravel\post;
+use function Pest\Laravel\put;
 
 /*Roles de Cajon
 1 = Admin
@@ -98,6 +100,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('chats', ChatController::class);
         Route::apiResource('messages', MessageController::class);
         Route::get("periods", [PeriodController::class, 'index']);
+
+        Route::get('announcements', [AnnouncementController::class, 'index']);
+        Route::get('announcements/{id}', [AnnouncementController::class, 'show']);
     });
 
     // Admin y Maestro (roles 1 y 2)
@@ -113,7 +118,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('groups/{group}/students', [GroupController::class, 'removeStudent']);
 
         Route::apiResource('units', UnitController::class);
-        Route::apiResource('announcements', AnnouncementController::class);
+        Route::post('announcements', [AnnouncementController::class, 'store']);
+        Route::put('announcements/{id}', [AnnouncementController::class, 'update']);
+        Route::patch('announcements/{id}', [AnnouncementController::class, 'update']);
+        Route::delete('announcements/{id}', [AnnouncementController::class, 'destroy']);
+
         Route::apiResource('assignments', AssignmentController::class);
 
         // Calificaciones — crear, editar, eliminar
