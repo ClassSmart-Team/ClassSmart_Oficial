@@ -6,6 +6,7 @@ use App\Http\Resources\ChatResource;
 use App\Models\Chat;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use App\Models\User;
  
 class ChatController extends Controller
 {
@@ -13,13 +14,13 @@ class ChatController extends Controller
 
     public function availableUsers(Request $request)
     {
-        $users = \App\Models\User::query()
+        $users = User::query()
             ->where('id', '!=', $request->user()->id)
             ->whereIn('role_id', [2, 3])
             ->where('active', true)
             ->select('id', 'name', 'lastname', 'email')
             ->orderBy('name')
-            ->orderBy('lastname')
+            ->orderBy('lastname')->with("role")
             ->get();
 
         return $this->successResponse(
