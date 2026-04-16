@@ -16,7 +16,7 @@ class NotificationRequest extends FormRequest
         return [
             'title'              => ['required', 'string', 'max:255'],
             'message'            => ['required', 'string'],
-            'type'               => ['required', 'in: General,Submission'],
+            'type'               => ['required', 'in:General,Individual'],
             'related_group'      => ['nullable', 'integer', 'exists:groups,id'],
             'related_assignment' => ['nullable', 'integer', 'exists:assignments,id'],
             // read_status ya no existe — se maneja en notification_user.read_at

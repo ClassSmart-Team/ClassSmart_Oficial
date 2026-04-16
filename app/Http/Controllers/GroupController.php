@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\GroupRequest;
 use App\Http\Resources\GroupResource;
 use App\Models\Group;
+use App\Models\Submission;
 use App\Traits\ApiResponse;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -323,7 +324,7 @@ class GroupController extends Controller
             return $this->errorResponse('No tienes permiso para ver este grupo.', 403);
         }
 
-        $group = Group::with(['ownerUser', 'period', 'assignments.unit', 'announcements'])
+        $group = Group::with(['ownerUser', 'period', 'assignments.unit', 'announcements', 'units'])
             ->find($groupId);
 
         $units = [];

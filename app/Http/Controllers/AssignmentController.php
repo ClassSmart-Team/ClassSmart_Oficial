@@ -96,7 +96,7 @@ class AssignmentController extends Controller
                     ->where('users.id', $user->id)
                     ->where('student_groups.active', true);
             })
-            ->with(['group.ownerUser', 'unit'])
+            ->with(['group', 'unit'])
             ->withCount('submissions')
             ->get();
 
@@ -122,7 +122,7 @@ class AssignmentController extends Controller
                     ->where('users.id', $user->id)
                     ->where('student_groups.active', true);
             })
-            ->with(['group', 'unit', 'files', "submissions" => function ($submissionQuery) use ($user) {
+            ->with(['group.ownerUser', 'unit', 'files', "submissions" => function ($submissionQuery) use ($user) {
                 $submissionQuery->where('student_id', $user->id)->with('files');
             }])
             ->withCount('submissions')
@@ -440,7 +440,7 @@ class AssignmentController extends Controller
             'child_name'  => $user->children()->find($childId)->name, // Añadimos esto para el frontend
             'teacher'     => $teacher ? ($teacher->name . ' ' . $teacher->lastname) : 'Docente',
             'end_date'    => $assignment->end_date ? $assignment->end_date->toIso8601String() : null,
-            'points'      => 100,
+            'points'      => 10,
             'resources'   => $resources,
             'submission'  => $submissionData
         ];
